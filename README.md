@@ -6,9 +6,9 @@
 
 ### 在线使用
 
-直接访问：https://workpoints.com。
+直接访问：https://w-p.pages.dev/
 
-访问：https://workpoints.com/demo，可以进入演示界面。
+访问：https://w-p.pages.dev/demo/ 进入演示界面
 
 ### 离线本地部署
 
