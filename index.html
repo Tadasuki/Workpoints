@@ -180,7 +180,7 @@ main{max-width:1060px; margin:0 auto; padding:22px 20px calc(64px + env(safe-are
 .chart-head p{font-size:12px; color:var(--muted); margin-top:3px}
 .chart-body{position:relative}
 .month-chart-scroll{
-  width:100%; overflow-x:auto; overflow-y:hidden; padding:0 2px 7px;
+  min-width:0; width:100%; overflow-x:auto; overflow-y:hidden; padding:0 2px 7px;
   overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch;
   touch-action:pan-x; scrollbar-width:thin; scrollbar-color:var(--accent-soft) transparent;
 }
@@ -189,6 +189,10 @@ main{max-width:1060px; margin:0 auto; padding:22px 20px calc(64px + env(safe-are
 .month-chart-scroll::-webkit-scrollbar-thumb{background:var(--accent-soft); border-radius:999px}
 .month-chart-stage{width:max-content; min-width:100%}
 .month-chart-stage .chart-svg{width:auto; max-width:none}
+.month-chart-frame{display:grid; grid-template-columns:46px minmax(0,1fr); min-width:0; position:relative}
+.month-chart-y-axis{position:relative; z-index:3; width:46px; min-width:46px; background:var(--surface); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); pointer-events:none}
+.month-chart-y-axis::after{content:""; position:absolute; z-index:2; top:0; right:-18px; bottom:0; width:20px; background:linear-gradient(90deg,var(--surface),transparent); -webkit-backdrop-filter:blur(7px); backdrop-filter:blur(7px)}
+.month-chart-y-axis .chart-svg{width:46px; height:280px; overflow:visible}
 .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px}
 
 /* ============ 图表元素 ============ */
@@ -577,7 +581,7 @@ body{font-weight:600}
   .kpi::before{left:16px}
   .kpi-value{font-size:24px}
   .chart-card{padding:19px 17px 15px}
-  .month-chart-scroll{margin:0 -3px; padding-left:3px; padding-right:3px}
+  .month-chart-scroll{padding-left:3px; padding-right:3px}
   .month-chart-stage{min-width:100%}
   .chart-head h2{font-size:17px}
   .range-row{flex-wrap:nowrap; align-items:center}
@@ -1299,15 +1303,21 @@ function drawArea(container, days, opts={}){
 function drawBars(container, months){
   container.innerHTML = "";
   if(!months.length){ emptyChart(container, t("emptyChart")); return; }
-  const viewportWidth = Math.max(container.clientWidth || 460, 300), H = 280;
-  const m = {t:22, r:10, b:38, l:46};
+  const axisWidth = 46, viewportWidth = Math.max((container.clientWidth || 460) - axisWidth, 250), H = 280;
+  const m = {t:22, r:10, b:38, l:8};
   const W = Math.max(viewportWidth, m.l + m.r + months.length * 112);
   const pw = W - m.l - m.r, ph = H - m.t - m.b;
   const plotTop = m.t + 10, plotH = ph - 10, plotBottom = m.t + ph;
   const max = Math.max(0.01, ...months.map(x => x.earn));
   const ticks = niceTicks(max, 5), ymax = ticks[ticks.length-1];
+  const axisSvg = el("svg", {viewBox:"0 0 "+axisWidth+" "+H, width:axisWidth, height:H, class:"chart-svg", "aria-hidden":"true"});
+  ticks.forEach(v => {
+    const y = plotTop + plotH*(1 - v/ymax);
+    axisSvg.append(el("text", {x:axisWidth-8, y:y+4, class:"tick", "text-anchor":"end"}, numFmt(v)));
+  });
+  axisSvg.append(el("line", {x1:axisWidth-1, y1:plotTop, x2:axisWidth-1, y2:plotBottom, class:"axis"}));
   const svg = el("svg", {viewBox:"0 0 "+W+" "+H, width:W, height:H, class:"chart-svg", role:"img", "aria-label":t("monthTitle")});
-  ticks.forEach(v => { const y = plotTop + plotH*(1 - v/ymax); svg.append(el("line", {x1:m.l, y1:y, x2:W-m.r, y2:y, class:"grid"})); svg.append(el("text", {x:m.l-8, y:y+4, class:"tick", "text-anchor":"end"}, numFmt(v))); });
+  ticks.forEach(v => { const y = plotTop + plotH*(1 - v/ymax); svg.append(el("line", {x1:m.l, y1:y, x2:W-m.r, y2:y, class:"grid"})); });
   svg.append(el("line", {x1:m.l, y1:plotBottom, x2:W-m.r, y2:plotBottom, class:"axis"}));
   const n = months.length, band = pw/n, bw = Math.min(42, band*0.42);
   const ac = accent(), ac2 = accent2();
@@ -1332,7 +1342,9 @@ function drawBars(container, months){
   });
   const scroll = document.createElement("div"); scroll.className = "month-chart-scroll";
   const stage = document.createElement("div"); stage.className = "month-chart-stage";
-  stage.append(svg); scroll.append(stage); container.append(scroll, tip);
+  const frame = document.createElement("div"); frame.className = "month-chart-frame";
+  const axis = document.createElement("div"); axis.className = "month-chart-y-axis";
+  axis.append(axisSvg); stage.append(svg); scroll.append(stage); frame.append(axis, scroll); container.append(frame, tip);
   scroll.addEventListener("scroll", () => { tip.style.display = "none"; }, {passive:true});
   requestAnimationFrame(() => { scroll.scrollLeft = scroll.scrollWidth; });
 }
