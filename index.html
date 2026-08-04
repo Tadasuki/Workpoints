@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="auto">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>工分 · WorkPoints</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23C15F3C'/%3E%3Ctext x='16' y='22' font-size='17' font-family='system-ui' font-weight='700' fill='%23FBF9F6' text-anchor='middle'%3E¥%3C/text%3E%3C/svg%3E">
+<style>
+/* ============ 设计令牌 ============ */
+:root{
+  --font-display: "Anthropic Serif", "Source Han Serif SC", "思源宋体", "Iowan Old Style", "Songti SC", Palatino, Georgia, serif;
+  --font-cjk: "Source Han Serif SC", "思源宋体", "Noto Serif CJK SC", "Songti SC", "STSong", serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  --ease-out: cubic-bezier(.22,.8,.3,1);
+  --ease-spring: cubic-bezier(.34,1.4,.4,1);
+}
+:root[data-theme="light"]{
+  color-scheme: light;
+  --bg:#F4F0E8; --surface:rgba(255,255,255,.76); --surface-2:#ECE7DD; --surface-3:#E2DCD0;
+  --ink:#272522; --ink-2:#6E6A62; --muted:#9C978D;
+  --accent:#C15F3C; --accent-2:#A94F31; --accent-soft:#D9A58C; --accent-wash:rgba(193,95,60,.10);
+  --line:rgba(28,27,24,.08); --hairline:rgba(28,27,24,.10); --grid:#EAE6DC;
+  --success:#0A7D3C; --danger:#C4472F;
+  --shadow:0 1px 2px rgba(28,27,24,.04), 0 10px 30px rgba(28,27,24,.06);
+  --shadow-lg:0 2px 6px rgba(28,27,24,.06), 0 24px 60px rgba(28,27,24,.12);
+  --header-bg:rgba(244,240,232,.78);
+  --tt-bg:rgba(255,255,255,.94);
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#191816; --surface:rgba(35,33,29,.82); --surface-2:#292722; --surface-3:#37332B;
+  --ink:#F3F0E7; --ink-2:#B6B0A3; --muted:#8C8679;
+  --accent:#DE8E67; --accent-2:#F0A17C; --accent-soft:#B2663F; --accent-wash:rgba(222,142,103,.13);
+  --line:rgba(255,255,255,.07); --hairline:rgba(255,255,255,.11); --grid:#2B2820;
+  --success:#57C98C; --danger:#E07A5C;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 34px rgba(0,0,0,.42);
+  --shadow-lg:0 2px 8px rgba(0,0,0,.5), 0 28px 70px rgba(0,0,0,.55);
+  --header-bg:rgba(25,24,22,.80);
+  --tt-bg:rgba(31,29,23,.98);
+}
+
+/* ============ 基础 ============ */
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font-sans);
+  background:var(--bg); color:var(--ink);
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  transition:background .4s var(--ease-out), color .4s var(--ease-out);
+  min-height:100vh; overflow-x:hidden;
+}
+body::before{
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:
+    radial-gradient(900px 480px at 12% -10%, var(--accent-wash), transparent 60%),
+    radial-gradient(720px 420px at 105% -5%, color-mix(in srgb, var(--accent-soft) 14%, transparent), transparent 55%);
+  transition:background .4s var(--ease-out);
+}
+button{font-family:inherit; color:inherit; background:none; border:none; cursor:pointer}
+input{font-family:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:6px}
+
+/* ============ 顶栏 ============ */
+header{
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  padding:12px 20px; padding-top:calc(12px + env(safe-area-inset-top));
+  background:var(--header-bg); -webkit-backdrop-filter:blur(22px) saturate(180%);
+  backdrop-filter:blur(22px) saturate(180%);
+  border-bottom:1px solid var(--hairline);
+}
+.brand{display:flex; align-items:center; gap:11px; user-select:none}
+.brand-badge{
+  width:38px; height:38px; border-radius:11px; flex:none;
+  display:grid; place-items:center; font-size:17px; font-weight:700; color:#FBF9F5;
+  background:linear-gradient(150deg, var(--accent), var(--accent-2));
+  box-shadow:0 3px 10px var(--accent-wash), inset 0 1px 0 rgba(255,255,255,.25);
+  transition:transform .45s var(--ease-spring);
+}
+.brand:active .brand-badge{transform:scale(.9)}
+.brand-name{font-family:var(--font-display); font-size:20px; font-weight:700; letter-spacing:.01em; line-height:1.1}
+.brand-sub{font-size:11px; color:var(--muted); letter-spacing:.02em; line-height:1.1; margin-top:2px}
+.controls{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+
+/* 分段控件 */
+.seg{display:inline-flex; padding:3px; gap:2px; background:var(--surface-2); border:1px solid var(--hairline); border-radius:12px}
+.seg-opt{
+  padding:6px 12px; border-radius:9px; font-size:12.5px; font-weight:600; color:var(--ink-2);
+  transition:background .22s var(--ease-out), color .22s var(--ease-out), transform .12s var(--ease-out);
+  min-width:36px; text-align:center;
+}
+.seg-opt:active{transform:scale(.94)}
+.seg-opt.active{background:var(--surface); color:var(--ink); box-shadow:0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px var(--hairline)}
+.icon-btn{
+  width:34px; height:34px; border-radius:10px; display:grid; place-items:center; font-size:15px;
+  background:var(--surface-2); border:1px solid var(--hairline); color:var(--ink-2);
+  transition:transform .12s var(--ease-out), background .2s var(--ease-out), color .2s;
+}
+.icon-btn:hover{color:var(--ink)}
+.icon-btn:active{transform:scale(.9)}
+.icon-btn svg{width:17px; height:17px}
+
+/* ============ 布局 ============ */
+main{max-width:1060px; margin:0 auto; padding:22px 20px calc(64px + env(safe-area-inset-bottom));}
+.card{
+  background:var(--surface); border:1px solid var(--hairline); border-radius:22px;
+  box-shadow:var(--shadow); padding:22px;
+  transition:transform .3s var(--ease-out), box-shadow .3s var(--ease-out), background .4s var(--ease-out);
+}
+.card:hover{box-shadow:var(--shadow-lg); transform:translateY(-1px)}
+.card:active{transform:translateY(0) scale(.997)}
+
+/* ============ Hero ============ */
+.hero{position:relative; overflow:hidden; margin-bottom:16px}
+.hero::after{
+  content:""; position:absolute; right:-60px; top:-80px; width:280px; height:280px; border-radius:50%;
+  background:radial-gradient(circle, var(--accent-wash), transparent 65%); pointer-events:none;
+}
+.hero-tags{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; position:relative; z-index:1}
+.chip{
+  display:inline-flex; align-items:center; gap:6px; padding:5px 11px; font-size:12px; font-weight:600;
+  color:var(--ink-2); background:var(--surface-2); border:1px solid var(--hairline); border-radius:999px;
+}
+.chip b{color:var(--ink); font-variant-numeric:tabular-nums}
+.chip-accent{color:var(--accent); background:var(--accent-wash); border-color:transparent}
+.chip-accent b{color:var(--accent)}
+.hero-row{display:flex; align-items:center; justify-content:space-between; gap:24px; position:relative; z-index:1}
+.hero-label{font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:6px}
+.hero-figure{
+  font-size:clamp(44px, 8vw, 64px); line-height:1.02; font-weight:700; letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;
+}
+.hero-sub{font-size:13.5px; color:var(--muted); margin-top:10px; letter-spacing:.01em}
+.hero-side{display:flex; align-items:center; gap:18px; flex:none}
+.ring-label{text-align:center}
+.ring-label .v{font-size:16px; font-weight:700; font-variant-numeric:tabular-nums}
+.ring-label .k{font-size:11px; color:var(--muted); margin-top:2px}
+.hero-stat{text-align:right}
+.hero-stat .v{font-size:20px; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:-.01em}
+.hero-stat .k{font-size:11px; color:var(--muted); margin-top:2px}
+
+/* ============ 范围 + KPI ============ */
+.range-row{display:flex; align-items:center; justify-content:space-between; margin:4px 2px 16px; gap:12px; flex-wrap:wrap}
+.range-row .seg .seg-opt{padding:6px 14px}
+.kpis{display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:16px}
+.kpi{
+  padding:18px 18px 16px; position:relative; overflow:hidden;
+  background:var(--surface); border:1px solid var(--hairline); border-radius:18px; box-shadow:var(--shadow);
+  transition:transform .3s var(--ease-out), box-shadow .3s var(--ease-out);
+}
+.kpi:hover{transform:translateY(-2px); box-shadow:var(--shadow-lg)}
+.kpi-label{font-size:12px; font-weight:600; color:var(--ink-2); display:flex; align-items:center; gap:6px}
+.kpi-value{font-size:26px; font-weight:700; letter-spacing:-.02em; margin-top:8px; font-variant-numeric:tabular-nums}
+.kpi-delta{font-size:11.5px; font-weight:600; margin-top:7px; display:flex; align-items:center; gap:4px}
+.kpi-delta.up{color:var(--success)} .kpi-delta.down{color:var(--danger)} .kpi-delta.flat{color:var(--muted)}
+.kpi-delta .why{color:var(--muted); font-weight:500}
+.kpi-spark{position:absolute; right:14px; bottom:12px; opacity:.85}
+.kpi-spark svg{display:block}
+
+/* ============ 图表卡片 ============ */
+.chart-grid{display:grid; gap:16px; margin-bottom:16px}
+.chart-card{padding:20px 20px 16px; overflow:hidden}
+.chart-head{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; padding:0 2px}
+.chart-head h2{font-size:15px; font-weight:700; letter-spacing:-.01em}
+.chart-head p{font-size:12px; color:var(--muted); margin-top:3px}
+.chart-body{position:relative}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px}
+
+/* ============ 图表元素 ============ */
+.chart-svg{display:block; width:100%; height:auto; overflow:visible}
+.donut-svg{width:186px; height:186px; flex:none}
+.grid{stroke:var(--grid); stroke-width:1}
+.axis{stroke:var(--hairline); stroke-width:1}
+.tick{fill:var(--muted); font-size:11px; font-family:var(--font-sans); font-variant-numeric:tabular-nums}
+.line{stroke:var(--accent); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+.dot-ring{fill:var(--surface); stroke:var(--accent); stroke-width:3}
+.dot{fill:var(--accent)}
+.cross{stroke:var(--accent); stroke-width:1; opacity:.35; stroke-dasharray:3 3; transition:opacity .2s}
+.hit{cursor:crosshair}
+.bar{transition:opacity .18s var(--ease-out)}
+.bar:hover{opacity:1}
+.bar-past{opacity:.72}
+.bar-past:hover{opacity:1}
+.cell{cursor:default; transition:opacity .12s var(--ease-out); rx:2}
+.cell-hover{stroke:var(--ink); stroke-width:1.6}
+#heatChart .chart-svg{width:min(100%,296px); margin:0 auto; height:auto}
+#heatChart .tick{font-size:9px}
+.donut-seg{transition:opacity .15s var(--ease-out)}
+.donut-seg:hover{opacity:.92}
+.legend{display:flex; flex-direction:column; gap:9px}
+.legend-item{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink-2); cursor:default}
+.legend-item b{color:var(--ink); margin-left:auto; font-variant-numeric:tabular-nums}
+.legend-item .pct{color:var(--muted); font-variant-numeric:tabular-nums}
+.swatch{width:9px; height:9px; border-radius:3px; flex:none}
+.hbar-row{display:flex; align-items:center; gap:10px; margin-bottom:11px}
+.hbar-label{width:52px; font-size:12px; color:var(--ink-2); flex:none; text-align:right}
+.hbar-track{flex:1; height:12px; background:var(--surface-2); border-radius:6px; overflow:hidden}
+.hbar-fill{height:100%; border-radius:6px; background:var(--accent); min-width:0; transition:width .6s var(--ease-out)}
+.hbar-fill.cur{background:var(--accent-2)}
+.hbar-val{font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; min-width:70px; text-align:right; color:var(--ink-2)}
+.hbar-day{display:flex; align-items:center; gap:12px}
+.heat-wrap{display:flex; align-items:flex-start; gap:10px}
+.heat-cols{display:flex; gap:3px}
+.heat-col{display:flex; flex-direction:column; gap:3px}
+.heat-cell{width:12px; height:12px; border-radius:3px; background:var(--surface-3)}
+.heat-labels{font-size:10.5px; color:var(--muted); line-height:12px}
+.heat-labels span{display:block; height:12px; line-height:12px; margin-bottom:3px}
+.heat-months{display:flex; justify-content:space-between; font-size:10.5px; color:var(--muted); margin-left:22px; padding-right:0}
+.heat-legend{display:flex; align-items:center; gap:6px; justify-content:flex-end; font-size:11px; color:var(--muted); margin-top:10px; padding-right:2px}
+.heat-legend .cell{width:12px; height:12px; border-radius:3px}
+.donut-box{display:flex; align-items:center; gap:26px; flex-wrap:wrap}
+
+/* ============ 工具提示 ============ */
+.tt{
+  position:absolute; z-index:30; pointer-events:none; display:none;
+  background:var(--tt-bg); -webkit-backdrop-filter:blur(12px) saturate(160%); backdrop-filter:blur(12px) saturate(160%);
+  border:1px solid var(--hairline); border-radius:13px; box-shadow:var(--shadow-lg);
+  padding:10px 13px; min-width:150px; font-size:12px;
+  transition:opacity .15s var(--ease-out);
+}
+.tt-title{font-weight:700; font-size:12.5px; margin-bottom:7px}
+.tt-row{display:flex; justify-content:space-between; gap:18px; margin-top:3px}
+.tt-row span{color:var(--muted)}
+.tt-row b{font-variant-numeric:tabular-nums; color:var(--ink)}
+.tt-empty{padding:6px 2px; color:var(--muted); font-size:12.5px; text-align:center; padding-top:40px; padding-bottom:40px}
+.empty-ic{font-size:30px; opacity:.5; margin-bottom:10px}
+
+/* ============ 表单 ============ */
+.section-title{font-size:15px; font-weight:700; letter-spacing:-.01em; margin-bottom:2px}
+.section-sub{font-size:12px; color:var(--muted); margin-bottom:16px}
+.form-fields{display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px}
+.field{display:flex; flex-direction:column; gap:6px}
+.field label{font-size:12px; font-weight:600; color:var(--ink-2)}
+.field input{
+  height:40px; padding:0 12px; font-size:14px; background:var(--surface-2);
+  border:1px solid var(--hairline); border-radius:11px; transition:border-color .2s, box-shadow .2s;
+  font-variant-numeric:tabular-nums;
+}
+.field input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
+.field.wide{grid-column:1/-1}
+.form-foot{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:16px; flex-wrap:wrap}
+.form-preview{font-size:13px; color:var(--muted)}
+.form-preview b{color:var(--accent); font-size:17px; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:-.01em}
+.btn{
+  padding:10px 22px; border-radius:999px; font-size:13.5px; font-weight:600;
+  background:var(--surface-2); border:1px solid var(--hairline); color:var(--ink);
+  transition:transform .13s var(--ease-out), background .2s, box-shadow .2s;
+}
+.btn:active{transform:scale(.96)}
+.btn-primary{
+  background:linear-gradient(150deg, var(--accent), var(--accent-2)); color:#FFF9F3; border:none;
+  box-shadow:0 4px 14px var(--accent-wash), inset 0 1px 0 rgba(255,255,255,.25);
+}
+.btn-primary:active{box-shadow:0 2px 6px var(--accent-wash)}
+.btn-ghost{background:transparent; border-color:var(--hairline); color:var(--ink-2)}
+.btn-danger{color:var(--danger); border-color:color-mix(in srgb, var(--danger) 30%, transparent)}
+
+/* ============ 表格 ============ */
+.table-wrap{overflow-x:auto; margin:0 -6px; padding:0 6px}
+table{width:100%; border-collapse:collapse; font-size:13px}
+thead th{
+  text-align:left; font-size:11.5px; font-weight:600; color:var(--muted);
+  padding:8px 10px; border-bottom:1px solid var(--hairline); white-space:nowrap;
+}
+tbody td{padding:11px 10px; border-bottom:1px solid var(--line); white-space:nowrap; font-variant-numeric:tabular-nums}
+tbody tr{transition:background .15s var(--ease-out)}
+tbody tr:hover{background:var(--surface-2)}
+td.note{max-width:200px; overflow:hidden; text-overflow:ellipsis; color:var(--ink-2); font-variant-numeric:normal}
+td .mono{font-variant-numeric:tabular-nums}
+.del-btn{
+  width:26px; height:26px; border-radius:8px; display:grid; place-items:center; color:var(--muted);
+  transition:background .15s, color .15s, transform .12s;
+}
+.del-btn:hover{background:color-mix(in srgb, var(--danger) 14%, transparent); color:var(--danger)}
+.del-btn:active{transform:scale(.86)}
+.empty-state{padding:44px 0; text-align:center; color:var(--muted); font-size:13.5px}
+
+/* ============ 设置弹层 ============ */
+.popover{
+  position:fixed; top:70px; right:20px; width:min(360px, calc(100vw - 40px)); z-index:60;
+  background:var(--surface); border:1px solid var(--hairline); border-radius:18px; box-shadow:var(--shadow-lg);
+  padding:20px; transform-origin:top right;
+  transition:transform .28s var(--ease-spring), opacity .24s var(--ease-out);
+  opacity:0; transform:scale(.92) translateY(-8px); pointer-events:none;
+}
+.popover.open{opacity:1; transform:none; pointer-events:auto}
+.popover h3{font-size:14px; font-weight:700; margin-bottom:4px}
+.popover .sub{font-size:12px; color:var(--muted); margin-bottom:16px}
+.set-block{padding:14px 0; border-top:1px solid var(--line)}
+.set-block:first-of-type{border-top:none}
+.set-row{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px}
+.set-row label{font-size:12.5px; font-weight:600; color:var(--ink-2)}
+.set-row input{width:96px; height:32px; padding:0 10px; text-align:right; font-size:13px; background:var(--surface-2); border:1px solid var(--hairline); border-radius:8px; font-variant-numeric:tabular-nums}
+.set-row input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
+.set-btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
+.set-note{font-size:11px; color:var(--muted); margin-top:12px; line-height:1.5}
+
+/* ============ 弹窗 + 提示 ============ */
+.modal-mask{position:fixed; inset:0; z-index:70; background:rgba(20,18,14,.42); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; padding:20px}
+.modal-mask.open{display:flex}
+.modal{background:var(--surface); border:1px solid var(--hairline); border-radius:20px; box-shadow:var(--shadow-lg); padding:22px; width:min(360px, 100%); transform-origin:center; animation:pop .3s var(--ease-spring)}
+@keyframes pop{from{opacity:0; transform:scale(.94) translateY(8px)} to{opacity:1; transform:none}}
+.modal h3{font-size:16px; font-weight:700; margin-bottom:8px}
+.modal p{font-size:13px; color:var(--ink-2); line-height:1.55; margin-bottom:18px}
+.modal-actions{display:flex; justify-content:flex-end; gap:8px}
+.toasts{position:fixed; bottom:calc(24px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); z-index:80; display:flex; flex-direction:column; gap:8px; align-items:center; width:min(420px, calc(100vw - 32px))}
+.toast{
+  display:flex; align-items:center; gap:12px; padding:11px 16px; border-radius:14px; font-size:13px; font-weight:600;
+  background:var(--surface); border:1px solid var(--hairline); box-shadow:var(--shadow-lg);
+  animation:toastIn .4s var(--ease-spring);
+}
+@keyframes toastIn{from{opacity:0; transform:translateY(16px) scale(.95)} to{opacity:1; transform:none}}
+.toast .toast-act{color:var(--accent); font-size:12.5px; padding:4px 8px; border-radius:7px}
+.toast .toast-act:hover{background:var(--accent-wash)}
+.toast.out{transition:opacity .25s, transform .25s var(--ease-out); opacity:0; transform:translateY(8px)}
+
+/* ============ 页脚 ============ */
+footer{margin-top:36px; text-align:center; font-size:11.5px; color:var(--muted); line-height:1.8}
+
+/* ============ 响应式 ============ */
+@media (max-width:900px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .grid-2{grid-template-columns:1fr}
+}
+@media (max-width:600px){
+  main{padding:16px 14px 56px}
+  .card{padding:18px}
+  .hero-figure{font-size:44px}
+  .hero-side{display:none}
+  .kpi-value{font-size:22px}
+  .popover{top:auto; bottom:calc(20px + env(safe-area-inset-bottom)); right:14px; left:14px; width:auto; transform-origin:bottom center}
+  .popover.open{transform:none}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition-duration:.01ms !important; animation-duration:.01ms !important; scroll-behavior:auto !important}
+}
+@media (prefers-reduced-transparency: reduce){
+  header{background:var(--surface); -webkit-backdrop-filter:none; backdrop-filter:none}
+  .tt{background:var(--surface); backdrop-filter:none}
+}
+
+/* ============ 视觉细节：Anthropic Serif × Apple material ============ */
+body{
+  font-family:var(--font-display);
+  font-size:14px;
+  letter-spacing:0;
+  background:var(--bg);
+}
+body::before{display:none}
+button,input,table,.tick,.tt,.brand-sub,.chip,.hero-sub,.hero-stat .k,.kpi-label,.kpi-delta,.section-sub,.field label,.form-preview,.set-row label,.set-note,footer{
+  font-family:var(--font-sans);
+  letter-spacing:0;
+}
+header{
+  padding:13px 24px;
+  border-bottom-color:transparent;
+  box-shadow:0 10px 30px rgba(39,37,34,.04);
+}
+header::after{
+  content:"";
+  position:absolute;
+  left:24px; right:24px; bottom:0;
+  height:1px;
+  background:linear-gradient(90deg, transparent, var(--hairline) 18%, var(--hairline) 82%, transparent);
+}
+.brand{gap:12px}
+.brand-badge{
+  width:40px; height:40px; border-radius:12px;
+  background:var(--accent);
+  box-shadow:0 8px 18px var(--accent-wash), inset 0 1px 0 rgba(255,255,255,.28);
+}
+.brand-name,.hero-figure,.hero-label,.section-title,.chart-head h2,.modal h3,.popover h3{
+  font-family:var(--font-display);
+  letter-spacing:0;
+  font-optical-sizing:auto;
+}
+.brand-name{font-size:21px; font-weight:600}
+.brand-sub{font-size:10.5px; color:var(--muted)}
+.controls{gap:7px}
+.seg{
+  padding:3px;
+  background:rgba(126,112,94,.09);
+  border-color:rgba(126,112,94,.14);
+  border-radius:11px;
+}
+.seg-opt{padding:6px 11px; border-radius:8px; font-size:12px; font-weight:600}
+.seg-opt.active{
+  background:var(--surface);
+  box-shadow:0 2px 8px rgba(39,37,34,.10), 0 0 0 .5px var(--hairline);
+}
+.icon-btn{
+  width:36px; height:36px; border-radius:11px;
+  background:rgba(126,112,94,.09);
+  border-color:rgba(126,112,94,.14);
+}
+.icon-btn:hover{background:var(--surface); color:var(--accent)}
+main{max-width:1120px; padding:28px 24px calc(72px + env(safe-area-inset-bottom))}
+.card,.kpi{
+  background:var(--surface);
+  border-color:rgba(126,112,94,.16);
+  -webkit-backdrop-filter:blur(18px) saturate(120%);
+  backdrop-filter:blur(18px) saturate(120%);
+}
+.card{border-radius:18px; padding:24px; box-shadow:var(--shadow)}
+.card:hover{box-shadow:var(--shadow-lg); transform:translateY(-2px)}
+.hero{
+  min-height:250px;
+  margin-bottom:18px;
+  padding:26px 28px 28px;
+  border-radius:20px;
+  border-color:color-mix(in srgb, var(--accent) 26%, var(--hairline));
+  box-shadow:0 16px 44px rgba(39,37,34,.08), inset 0 1px 0 rgba(255,255,255,.42);
+}
+.hero::before{
+  content:"";
+  position:absolute;
+  left:0; top:24px; bottom:24px; width:3px;
+  border-radius:0 3px 3px 0;
+  background:var(--accent);
+}
+.hero::after{display:none}
+.hero-tags{gap:7px; margin-bottom:30px}
+.chip{padding:6px 10px; border-radius:8px; font-size:11.5px; background:rgba(126,112,94,.08)}
+.chip-accent{background:var(--accent-wash); color:var(--accent); border-color:color-mix(in srgb, var(--accent) 18%, transparent)}
+.hero-row{align-items:flex-end}
+.hero-label{font-size:16px; font-weight:500; color:var(--ink-2); margin-bottom:8px}
+.hero-figure{font-size:clamp(48px, 7vw, 76px); font-weight:500; line-height:.98; font-variant-numeric:oldstyle-nums proportional-nums}
+.hero-sub{font-size:12px; margin-top:13px}
+.hero-side{gap:24px}
+.hero-stat{padding-left:22px; border-left:1px solid var(--hairline)}
+.hero-stat .v{font-family:var(--font-display); font-size:22px; font-weight:500; letter-spacing:0}
+.hero-stat .k{font-size:10.5px; letter-spacing:.02em}
+.ring svg{filter:drop-shadow(0 4px 10px var(--accent-wash))}
+.range-row{margin:4px 2px 18px}
+.range-row .chip{font-size:11px; color:var(--muted)}
+.kpis{gap:12px; margin-bottom:18px}
+.kpi{
+  padding:20px 20px 18px;
+  border-radius:15px;
+  box-shadow:0 8px 22px rgba(39,37,34,.045);
+}
+.kpi::before{
+  content:""; position:absolute; left:20px; top:0; width:30px; height:2px;
+  background:var(--accent); opacity:.7;
+}
+.kpi:hover{transform:translateY(-3px); box-shadow:var(--shadow-lg)}
+.kpi-label{font-size:11.5px; color:var(--ink-2)}
+.kpi-value{font-family:var(--font-display); font-size:29px; font-weight:500; letter-spacing:0}
+.kpi-delta{font-size:11px}
+.chart-grid,.grid-2{gap:18px; margin-bottom:18px}
+.chart-card{padding:22px 22px 18px}
+.chart-head{margin-bottom:18px; padding:0 2px 12px; border-bottom:1px solid var(--line)}
+.chart-head h2{font-size:18px; font-weight:500; letter-spacing:0}
+.chart-head p{font-size:11.5px; margin-top:5px}
+.grid{stroke:color-mix(in srgb, var(--grid) 80%, transparent); stroke-dasharray:2 4}
+.axis{stroke:var(--hairline)}
+.line{stroke-width:2.5}
+.dot-ring{stroke-width:2.5}
+.cell{rx:3}
+.heat-cell{border-radius:4px}
+.donut-box{gap:30px}
+.tt{border-radius:10px; padding:11px 13px; box-shadow:0 14px 34px rgba(39,37,34,.16)}
+.section-title{font-size:20px; font-weight:500; letter-spacing:0}
+.section-sub{font-size:11.5px; margin-bottom:20px}
+.form-fields{gap:14px}
+.field{gap:7px}
+.field label{font-size:11.5px}
+.field input,.set-row input{
+  height:42px; border-radius:10px; background:rgba(126,112,94,.07); border-color:rgba(126,112,94,.16);
+}
+.field input:hover,.set-row input:hover{border-color:color-mix(in srgb, var(--accent) 36%, var(--hairline))}
+.form-foot{margin-top:20px}
+.form-preview b{font-family:var(--font-display); font-size:19px; font-weight:500; letter-spacing:0}
+.btn{padding:10px 16px; border-radius:10px; font-size:12.5px}
+.btn-primary{background:var(--accent); box-shadow:0 6px 16px var(--accent-wash), inset 0 1px 0 rgba(255,255,255,.24)}
+.btn-primary:hover{background:var(--accent-2); box-shadow:0 8px 20px var(--accent-wash), inset 0 1px 0 rgba(255,255,255,.24)}
+.btn-ghost{background:transparent}
+table{font-size:12.5px}
+thead th{font-size:10.5px; padding:9px 10px}
+tbody td{padding:12px 10px}
+.popover{
+  top:76px; right:24px; border-radius:15px;
+  background:var(--surface); -webkit-backdrop-filter:blur(24px) saturate(140%); backdrop-filter:blur(24px) saturate(140%);
+}
+.popover h3,.modal h3{font-size:20px; font-weight:500}
+.set-block{padding:16px 0}
+.set-row input{height:34px; border-radius:8px}
+.modal{border-radius:16px; background:var(--surface); backdrop-filter:blur(24px) saturate(140%)}
+.toast{border-radius:11px; backdrop-filter:blur(18px) saturate(140%)}
+footer{margin-top:44px; font-size:10.5px}
+
+:root{--font-weight-cjk:600; --font-weight-latin:600; --display-weight:600}
+body{font-weight:600}
+:lang(en) body{font-weight:600}
+.brand-name,.hero-figure,.hero-label,.section-title,.chart-head h2,.modal h3,.popover h3,.hero-stat .v,.kpi-value,.form-preview b{font-weight:var(--display-weight)}
+
+/* 热力图：让月份、星期、色阶和格子拥有稳定的空间关系。 */
+#heatChart{min-height:210px}
+.heatmap-shell{display:grid; grid-template-columns:24px minmax(0,1fr); gap:10px; width:100%; max-width:580px; margin:4px auto 0; padding:4px 2px 0}
+.heatmap-y-labels{display:grid; grid-template-rows:28px repeat(7,minmax(15px,1fr)); align-items:center; justify-items:end; color:var(--muted); font:10px/1 var(--font-sans); padding-bottom:30px}
+.heatmap-y-labels span{grid-row:auto; visibility:hidden}
+.heatmap-y-labels span:nth-child(1){grid-row:2; visibility:visible}
+.heatmap-y-labels span:nth-child(2){grid-row:4; visibility:visible}
+.heatmap-y-labels span:nth-child(3){grid-row:6; visibility:visible}
+.heatmap-y-labels span:nth-child(4){grid-row:8; visibility:visible}
+.heatmap-main{min-width:0}
+.heatmap-months,.heatmap-grid{display:grid; grid-template-columns:repeat(12,minmax(15px,1fr)); gap:6px}
+.heatmap-months{height:24px; align-items:end; color:var(--muted); font:10px/1 var(--font-sans)}
+.heatmap-months span{min-width:0; overflow:hidden; white-space:nowrap}
+.heatmap-grid{grid-template-rows:repeat(7,minmax(15px,1fr)); grid-auto-flow:column}
+.heatmap-cell{width:100%; aspect-ratio:1; min-width:0; padding:0; border:0; border-radius:5px; background:var(--heat-color); box-shadow:inset 0 0 0 1px rgba(255,255,255,.10); cursor:default; transition:transform .18s var(--ease-out), box-shadow .18s var(--ease-out), filter .18s var(--ease-out)}
+.heatmap-cell:hover,.heatmap-cell:focus-visible{transform:scale(1.14); filter:saturate(1.08); box-shadow:0 0 0 2px var(--surface), 0 0 0 3px var(--accent); outline:none; z-index:2}
+
+/* 范围条：active thumb 在按钮之间滑动，而不是重新绘制一块背景。 */
+#rangeSeg{position:relative; gap:0; overflow:hidden; --range-index:0}
+#rangeSeg::before{content:""; position:absolute; z-index:0; left:3px; top:3px; bottom:3px; width:calc((100% - 6px) / 8); border-radius:8px; background:var(--surface); box-shadow:0 2px 8px rgba(39,37,34,.10), 0 0 0 .5px var(--hairline); transform:translateX(calc(var(--range-index) * 100%)); transition:transform .38s cubic-bezier(.22,.8,.3,1); will-change:transform}
+#rangeSeg .seg-opt{position:relative; z-index:1; flex:1; min-width:0; background:transparent; box-shadow:none!important; padding-left:9px; padding-right:9px; white-space:nowrap}
+#rangeSeg .seg-opt.active{background:transparent; color:var(--ink)}
+#rangeSeg.custom-selected::before{opacity:.38}
+.range-custom-wrap{position:relative; flex:none}
+.range-custom{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--hairline); cursor:pointer; transition:background .2s var(--ease-out), color .2s var(--ease-out), border-color .2s var(--ease-out), transform .12s var(--ease-out)}
+.range-custom svg{width:14px; height:14px; flex:none}
+.range-custom:hover,.range-custom.active{color:var(--accent); border-color:color-mix(in srgb, var(--accent) 30%, var(--hairline)); background:var(--accent-wash)}
+.range-custom:active{transform:scale(.96)}
+.range-popover{position:absolute; z-index:45; top:calc(100% + 10px); right:0; width:min(310px, calc(100vw - 28px)); padding:18px; border:1px solid var(--hairline); border-radius:15px; background:var(--surface); box-shadow:var(--shadow-lg); -webkit-backdrop-filter:blur(24px) saturate(140%); backdrop-filter:blur(24px) saturate(140%); transform-origin:top right; opacity:0; transform:scale(.94) translateY(-6px); pointer-events:none; transition:opacity .22s var(--ease-out), transform .3s var(--ease-spring)}
+.range-popover.open{opacity:1; transform:none; pointer-events:auto}
+.range-popover h3{font:var(--display-weight) 19px/1.15 var(--font-display); margin-bottom:4px}
+.range-popover .sub{font:11.5px/1.45 var(--font-sans); color:var(--muted); margin-bottom:16px}
+.custom-range-fields{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.custom-range-fields .field{gap:6px}
+.custom-range-fields input{width:100%; height:38px; padding:0 9px; font-size:12px}
+.custom-range-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line)}
+
+@media (max-width:900px){
+  header{padding-left:18px; padding-right:18px}
+  header::after{left:18px; right:18px}
+  main{padding-left:18px; padding-right:18px}
+}
+@media (max-width:600px){
+  header{gap:12px; padding-left:14px; padding-right:14px}
+  header::after{left:14px; right:14px}
+  .controls{width:100%; justify-content:flex-end}
+  main{padding:18px 14px 58px}
+  .card{padding:19px}
+  .hero{min-height:230px; padding:22px 20px 24px}
+  .hero-tags{margin-bottom:34px}
+  .hero-row{align-items:flex-start}
+  .hero-label{font-size:15px}
+  .hero-figure{font-size:48px}
+  .kpi{padding:17px 16px 15px}
+  .kpi::before{left:16px}
+  .kpi-value{font-size:24px}
+  .chart-card{padding:19px 17px 15px}
+  .chart-head h2{font-size:17px}
+  .range-row{flex-wrap:nowrap; align-items:center}
+  #rangeSeg{flex:1; min-width:0}
+  #rangeSeg .seg-opt{padding-left:1px; padding-right:1px; font-size:9.5px}
+  .range-custom{width:38px; height:34px; justify-content:center; padding:0}
+  .range-custom span{display:none}
+  .range-popover{position:fixed; top:auto; right:14px; bottom:calc(20px + env(safe-area-inset-bottom)); left:14px; width:auto; transform-origin:bottom center}
+  .heatmap-months,.heatmap-grid{gap:4px}
+  .heatmap-shell{grid-template-columns:20px minmax(0,1fr); gap:8px}
+  .grid-2[style*="grid-template-columns"]{grid-template-columns:1fr !important}
+  .grid-2 > *{min-width:0}
+  .table-wrap{min-width:0; max-width:100%}
+  .popover{top:auto; bottom:calc(20px + env(safe-area-inset-bottom)); right:14px; left:14px; transform-origin:bottom center}
+}
+@media (prefers-reduced-motion: reduce){
+  #rangeSeg::before,.range-popover,.heatmap-cell{transition:none!important}
+}
+@media (prefers-reduced-transparency: reduce){
+  .card,.kpi,.popover,.modal,.toast{background:var(--surface); -webkit-backdrop-filter:none; backdrop-filter:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand" title="工分 · WorkPoints">
+    <div class="brand-badge" id="brandBadge">¥</div>
+    <div>
+      <div class="brand-name" id="brandName">工分</div>
+      <div class="brand-sub" id="brandSub">WorkPoints · 兼职收入</div>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="seg" id="langSeg" role="tablist"></div>
+    <div class="seg" id="curSeg" role="tablist"></div>
+    <button class="icon-btn" id="themeBtn" aria-label="主题"></button>
+    <button class="icon-btn" id="settingsBtn" aria-label="设置"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></button>
+  </div>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="card hero">
+    <div class="hero-tags">
+      <span class="chip chip-accent"><span data-i18n="workMonth">工作月</span> <b id="heroWorkMonth">–</b></span>
+      <span class="chip"><span data-i18n="settleOn">结算日</span> <b id="heroSettle">–</b></span>
+      <span class="chip" id="heroCountdown">–</span>
+    </div>
+    <div class="hero-row">
+      <div>
+        <div class="hero-label" data-i18n="heroLabel">本月工钱</div>
+        <div class="hero-figure" id="heroFigure" data-v="0">¥0.00</div>
+        <div class="hero-sub" id="heroSub"></div>
+      </div>
+      <div class="hero-side">
+        <div class="ring" id="heroRing"></div>
+        <div class="hero-stat">
+          <div class="v" id="heroDaily">¥0.00</div>
+          <div class="k" data-i18n="dailyAvg">日均收入</div>
+          <div class="v" style="margin-top:10px" id="heroHourly">¥0.00</div>
+          <div class="k" data-i18n="hourly">时薪</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 范围 + KPI -->
+  <div class="range-row">
+    <div class="seg" id="rangeSeg"></div>
+    <div class="range-custom-wrap">
+      <button class="chip range-custom" id="rangeCustomBtn" type="button" aria-expanded="false" title="自选时间段">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M7.5 3.5v3M16.5 3.5v3M3.5 9.5h17"/></svg>
+        <span id="rangeNote">自选时间段</span>
+      </button>
+      <div class="range-popover" id="rangePop" aria-hidden="true">
+        <h3 data-i18n="customRangeTitle">自选时间段</h3>
+        <p class="sub" data-i18n="customRangeSub">按日期查看收入</p>
+        <div class="custom-range-fields">
+          <div class="field"><label data-i18n="customFrom">开始日期</label><input type="date" id="customFrom"></div>
+          <div class="field"><label data-i18n="customTo">结束日期</label><input type="date" id="customTo"></div>
+        </div>
+        <div class="custom-range-actions">
+          <button class="btn btn-ghost" id="customReset" type="button" data-i18n="customReset">清除</button>
+          <button class="btn btn-primary" id="customApply" type="button" data-i18n="customApply">应用</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <section class="kpis" id="kpis"></section>
+
+  <!-- 每日趋势 -->
+  <section class="chart-grid">
+    <div class="card chart-card">
+      <div class="chart-head">
+        <div><h2 data-i18n="dailyTitle">每日工钱</h2><p id="dailySub"></p></div>
+      </div>
+      <div class="chart-body" id="dailyChart"></div>
+    </div>
+  </section>
+
+  <!-- 工作月 + 热力 -->
+  <div class="grid-2">
+    <div class="card chart-card">
+      <div class="chart-head">
+        <div><h2 data-i18n="monthTitle">工作月收入</h2><p data-i18n="monthSub">每个工作月 · 20日结算</p></div>
+      </div>
+      <div class="chart-body" id="monthChart"></div>
+    </div>
+    <div class="card chart-card">
+      <div class="chart-head">
+        <div><h2 data-i18n="heatTitle">近12周热力</h2><p data-i18n="heatSub">每日收入热力</p></div>
+      </div>
+      <div class="chart-body" id="heatChart"></div>
+    </div>
+  </div>
+
+  <!-- 时段 + 星期 -->
+  <div class="grid-2">
+    <div class="card chart-card">
+      <div class="chart-head">
+        <div><h2 data-i18n="sessionTitle">时段分布</h2><p data-i18n="sessionSub">不同时段赚取的工钱</p></div>
+      </div>
+      <div class="chart-body" id="sessionChart"></div>
+    </div>
+    <div class="card chart-card">
+      <div class="chart-head">
+        <div><h2 data-i18n="weekdayTitle">星期分布</h2><p data-i18n="weekdaySub">一周各天赚取的工钱</p></div>
+      </div>
+      <div class="chart-body" id="weekdayChart"></div>
+    </div>
+  </div>
+
+  <!-- 记录 -->
+  <div class="grid-2" style="grid-template-columns: 400px 1fr; align-items:start">
+    <div class="card">
+      <h2 class="section-title" data-i18n="addTitle">记录一次工作</h2>
+      <p class="section-sub" data-i18n="addSub">每单 ¥0.05 · 收入自动计算</p>
+      <form id="entryForm">
+        <div class="form-fields">
+          <div class="field"><label data-i18n="fDate">日期</label><input type="date" id="inDate"></div>
+          <div class="field"><label data-i18n="fStart">开始时间（可选）</label><input type="time" id="inStart"></div>
+          <div class="field"><label data-i18n="fEnd">结束时间（可选）</label><input type="time" id="inEnd"></div>
+          <div class="field"><label data-i18n="fHours">耗时（小时）</label><input type="number" id="inHours" min="0" step="0.5" inputmode="decimal" placeholder="0"></div>
+          <div class="field"><label data-i18n="fOrders">单数 *</label><input type="number" id="inOrders" min="1" step="1" inputmode="numeric" placeholder="0"></div>
+          <div class="field wide"><label data-i18n="fNote">备注（可选）</label><input type="text" id="inNote" maxlength="40" placeholder="例如：晚班 8-11 点"></div>
+        </div>
+        <div class="form-foot">
+          <div class="form-preview"><span data-i18n="fPreview">预计收入</span> <b id="formPreview">¥0.00</b></div>
+          <button type="submit" class="btn btn-primary" data-i18n="fAdd">添加记录</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h2 class="section-title" data-i18n="tableTitle">最近记录</h2>
+      <p class="section-sub" data-i18n="tableSub">每条记录 · 一次工作时段</p>
+      <div class="table-wrap" id="tableWrap"></div>
+    </div>
+  </div>
+
+  <footer>
+    <div id="footNote">数据仅保存在浏览器本地</div>
+    <div>工分 · 见证每一单的积累</div>
+  </footer>
+</main>
+
+<!-- 设置弹层 -->
+<div class="popover" id="settingsPop">
+  <h3 data-i18n="settingsTitle">设置</h3>
+  <p class="sub" data-i18n="settingsSub">单价与汇率</p>
+  <div class="set-block">
+    <div class="set-row"><label data-i18n="rateLabel">每单收入（元）</label><input type="number" id="setRate" step="0.005" min="0"></div>
+    <div class="set-row"><label data-i18n="usdLabel">汇率 · 1 USD = ? CNY</label><input type="number" id="setUsd" step="0.01" min="0"></div>
+  </div>
+  <div class="set-block">
+    <div class="set-btns">
+      <button class="btn btn-ghost" id="btnExport" data-i18n="exportBtn">导出数据</button>
+      <button class="btn btn-ghost" id="btnImport" data-i18n="importBtn">导入数据</button>
+      <button class="btn btn-ghost btn-danger" id="btnClear" data-i18n="clearBtn">清空数据</button>
+    </div>
+  </div>
+  <p class="set-note" data-i18n="setNote">导入将替换当前记录 · 建议先导出备份</p>
+</div>
+<input type="file" id="fileImport" accept="application/json,.json" style="display:none">
+
+<!-- 确认弹窗 -->
+<div class="modal-mask" id="modalMask">
+  <div class="modal">
+    <h3 id="modalTitle"></h3>
+    <p id="modalMsg"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modalCancel" data-i18n="cancel">取消</button>
+      <button class="btn btn-danger" id="modalOk" data-i18n="confirm">确认</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+"use strict";
+/* ============================================================
+ * 工分 · WorkPoints — 兼职收入可视化
+ * 单文件应用：数据存 localStorage，可导出/导入 JSON 备份
+ * ============================================================ */
+
+/* ---------- 语言 ---------- */
+const I18N = {
+  zh: {
+    brand:"工分", brandSub:"WorkPoints · 兼职收入", tagline:"兼职收入 · 工时可视化",
+    workMonth:"工作月", settleOn:"结算日", daysLeft:"还有 {n} 天结算", settleToday:"今日结算",
+    heroLabel:"本月工钱", monthProgress:"本月进度", dailyAvg:"日均收入", hourly:"时薪",
+    curMonth:"本月", thisMonth:"本月",
+    rangeAll:"全部", rangeTotal:"总计", cur:"今天",
+    customRangeTitle:"自选时间段", customRangeSub:"按日期查看收入", customRangeBtn:"自选时间段", customFrom:"开始日期", customTo:"结束日期", customApply:"应用", customReset:"清除", customInvalid:"请选择有效的时间段", customSelected:"自选 · {from}–{to}",
+    orders:"单数", timeSpent:"耗时", earn:"收入", hourlyRate:"时薪",
+    vsPrev:"较上个周期",
+    dailyTitle:"工钱趋势", dailySub:"每日收入 · {range}", hourlySub:"每小时收入 · {range}",
+    monthTitle:"工作月收入", monthSub:"每个工作月 · 20日结算",
+    heatTitle:"近12周热力", heatSub:"每日收入热力",
+    sessionTitle:"时段分布", sessionSub:"不同时段赚取的工钱",
+    weekdayTitle:"星期分布", weekdaySub:"一周各天赚取的工钱",
+    segs:["凌晨","上午","下午","晚上"],
+    days:["周一","周二","周三","周四","周五","周六","周日"],
+    daysShort:["一","二","三","四","五","六","日"],
+    addTitle:"记录一次工作", addSub:"每单 ¥0.05 · 收入自动计算",
+    fDate:"日期", fStart:"开始时间（可选）", fEnd:"结束时间（可选）", fHours:"耗时（小时）", fOrders:"单数 *", fNote:"备注（可选）",
+    fPreview:"预计收入", fAdd:"添加记录", errOrders:"请输入至少 1 单",
+    tableTitle:"最近记录", tableSub:"每条记录 · 一次工作时段",
+    thDate:"日期", thSession:"时段", thOrders:"单数", thTime:"耗时", thEarn:"收入", thNote:"备注", thOp:"",
+    empty:"还没有记录。添加一笔工作，开始积累。",
+    toastAdded:"已添加记录", toastDeleted:"已删除记录", toastUndo:"撤销",
+    toastCleared:"已清空全部数据", toastImported:"导入成功 · 共 {n} 条", toastExported:"已导出备份",
+    importErr:"导入失败：文件格式不正确",
+    undoRestored:"已恢复", confirmDel:"删除这条记录？",
+    settingsTitle:"设置", settingsSub:"单价与汇率 · 数据管理",
+    rateLabel:"每单收入（元）", usdLabel:"汇率 · 1 USD = ? CNY",
+    exportBtn:"导出数据", importBtn:"导入数据", clearBtn:"清空数据", setNote:"导入将替换当前记录 · 建议先导出备份",
+    clearTitle:"清空全部数据？", clearMsg:"此操作不可恢复，确定要删除所有记录吗？建议先导出备份。",
+    cancel:"取消", confirm:"确认",
+    setThemeLight:"浅色", setThemeDark:"深色", setThemeAuto:"跟随系统",
+    demo:"演示", mine:"我的",
+    myData:"我的数据", demoData:"演示数据", emptyChart:"暂无数据",
+    footNote:"数据仅保存在你的浏览器本地 · 可随时导出备份",
+    fmtH:"{h}小时{m}分", fmtHM:"{h}小时", fmtM:"{m}分钟"
+  },
+  en: {
+    brand:"WorkPoints", brandSub:"兼职收入 · Part-time Income", tagline:"Part-time income · visualized",
+    workMonth:"Work month", settleOn:"Settlement", daysLeft:"{n} days to payday", settleToday:"Payday today",
+    heroLabel:"This work month", monthProgress:"Progress", dailyAvg:"Daily avg", hourly:"Hourly rate",
+    curMonth:"This month", thisMonth:"this month",
+    rangeAll:"All", rangeTotal:"Total", cur:"Today",
+    customRangeTitle:"Custom range", customRangeSub:"View earnings by date", customRangeBtn:"Custom range", customFrom:"Start date", customTo:"End date", customApply:"Apply", customReset:"Clear", customInvalid:"Choose a valid date range", customSelected:"Custom · {from}–{to}",
+    orders:"Orders", timeSpent:"Time", earn:"Earned", hourlyRate:"Hourly",
+    vsPrev:"vs prev. period",
+    dailyTitle:"Earnings trend", dailySub:"Per-day earnings · {range}", hourlySub:"Hourly earnings · {range}",
+    monthTitle:"Work-month earnings", monthSub:"Each work month · paid on the 20th",
+    heatTitle:"Last 12 weeks", heatSub:"Daily earnings heatmap",
+    sessionTitle:"By session time", sessionSub:"Earnings by time of day",
+    weekdayTitle:"By weekday", weekdaySub:"Earnings by day of week",
+    segs:["Dawn","Morning","Afternoon","Evening"],
+    days:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+    daysShort:["M","T","W","T","F","S","S"],
+    addTitle:"Log a session", addSub:"¥0.05 / order · earnings auto-calculated",
+    fDate:"Date", fStart:"Start time (optional)", fEnd:"End time (optional)", fHours:"Duration (hours)", fOrders:"Orders *", fNote:"Note (optional)",
+    fPreview:"Estimated", fAdd:"Add entry", errOrders:"Enter at least 1 order",
+    tableTitle:"Recent entries", tableSub:"One entry per work session",
+    thDate:"Date", thSession:"Session", thOrders:"Orders", thTime:"Time", thEarn:"Earned", thNote:"Note", thOp:"",
+    empty:"No entries yet. Add your first work session to get started.",
+    toastAdded:"Entry added", toastDeleted:"Entry deleted", toastUndo:"Undo",
+    toastCleared:"All data cleared", toastImported:"Imported · {n} entries", toastExported:"Backup exported",
+    importErr:"Import failed: invalid file",
+    undoRestored:"Restored", confirmDel:"Delete this entry?",
+    settingsTitle:"Settings", settingsSub:"Rate · currency · data",
+    rateLabel:"Rate per order (CNY)", usdLabel:"Exchange · 1 USD = ? CNY",
+    exportBtn:"Export", importBtn:"Import", clearBtn:"Clear all", setNote:"Import replaces current records — export a backup first.",
+    clearTitle:"Clear all data?", clearMsg:"This cannot be undone. Export a backup first.",
+    cancel:"Cancel", confirm:"Confirm",
+    setThemeLight:"Light", setThemeDark:"Dark", setThemeAuto:"System",
+    demo:"Demo", mine:"Mine",
+    myData:"My data", demoData:"Demo data", emptyChart:"No data yet",
+    footNote:"Data lives in your browser only — export to back up",
+    fmtH:"{h}h {m}m", fmtHM:"{h}h", fmtM:"{m}m"
+  }
+};
+
+/* ---------- 状态 ---------- */
+const LS_ENT = "wp.entries.v1", LS_SET = "wp.settings.v1";
+const IS_DEMO_PAGE = /\/demo(?:\/index\.html)?\/?$/.test(location.pathname);
+const DEFAULTS = { lang:"zh", currency:"CNY", theme:"auto", rate:0.05, cnyPerUsd:6.75, demo:false, range:30, customFrom:"", customTo:"" };
+
+function loadSettings(){
+  try{
+    const s = JSON.parse(localStorage.getItem(LS_SET) || "{}");
+    return Object.assign({}, DEFAULTS, s);
+  }catch(e){ return Object.assign({}, DEFAULTS); }
+}
+function saveSettings(){ try{ localStorage.setItem(LS_SET, JSON.stringify(state.settings)); }catch(e){} }
+function loadEntries(){
+  try{ const a = JSON.parse(localStorage.getItem(LS_ENT) || "[]"); return Array.isArray(a) ? a : []; }
+  catch(e){ return []; }
+}
+function saveEntries(){ try{ localStorage.setItem(LS_ENT, JSON.stringify(state.entries)); }catch(e){} }
+
+const state = { settings: loadSettings(), entries: loadEntries() };
+state.settings.demo = IS_DEMO_PAGE;
+const demoEntries = genDemo();
+
+function t(k){
+  const d = I18N[state.settings.lang] || I18N.zh;
+  return d[k] !== undefined ? d[k] : (I18N.zh[k] !== undefined ? I18N.zh[k] : k);
+}
+function tf(k, map){ let s = t(k); for(const kk in map) s = s.replace("{"+kk+"}", map[kk]); return s; }
+const isZH = () => state.settings.lang === "zh";
+const reduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- 演示数据（确定性随机，仅演示用，不入库） ---------- */
+function mulberry32(a){ return function(){
+  a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15, 1|a);
+  t=t+Math.imul(t^t>>>7, 61|t)^t; return ((t^t>>>14)>>>0)/4294967296;
+};}
+function genDemo(){
+  const rnd = mulberry32(20260801);
+  const out = [], today = new Date(), now = today.getTime(), DAY = 86400000;
+  const days = 200;
+  for(let i = days-1; i >= 0; i--){
+    const d = new Date(now - i*DAY);
+    const dow = d.getDay(); // 0=Sun
+    const growth = 1 + ((days - i)/days)*1.15;
+    let wf = 1;
+    if(dow === 0 || dow === 6) wf = 1.32; else if(dow === 5) wf = 1.08;
+    const dayOrders = (300 + rnd()*180) * growth * wf;
+    // 1–2 个时段（上午 / 下午 / 晚上）
+    const n = rnd() < 0.55 ? 2 : 1;
+    const slices = n === 2 ? [0.55, 0.45] : [1];
+    const slotPick = () => [ [8,12], [13,16], [19,22] ][Math.floor(rnd()*3)];
+    const slots = n === 2 ? [ slotPick(), slotPick() ] : [ slotPick() ];
+    for(let s = 0; s < n; s++){
+      const ord = Math.max(20, Math.round(dayOrders * slices[s]));
+      const perMin = 3.2 + rnd()*1.2;
+      const min = Math.max(15, Math.round(ord / perMin));
+      const [sh, eh] = slots[s];
+      const ts = new Date(d.getFullYear(), d.getMonth(), d.getDate(), sh + rnd()*(eh-sh), Math.floor(rnd()*6)*10);
+      out.push({
+        id: "d"+i+"-"+s,
+        ts: ts.toISOString(),
+        date: dateKey(d.getTime()),
+        startHour: ts.getHours(),
+        minutes: min, orders: ord,
+        note: rnd() < 0.3 ? (n===2 ? (s===0?"上午加练":"晚班冲量") : "集中冲刺") : ""
+      });
+    }
+  }
+  return out;
+}
+
+/* ---------- 活跃数据 ---------- */
+function activeEntries(){ return state.settings.demo ? demoEntries : state.entries; }
+function saveActiveEntries(){ if(!IS_DEMO_PAGE) saveEntries(); }
+
+/* ---------- 工具 ---------- */
+const DAY = 86400000;
+function startOfToday(){ const n=new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime(); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function numFmt(n, d=0){ return Number(n).toLocaleString(isZH()?"zh-CN":"en-US", {minimumFractionDigits:d, maximumFractionDigits:d}); }
+function fmtMoney(v){
+  if(state.settings.currency === "USD"){
+    const u = v / state.settings.cnyPerUsd;
+    return "$" + u.toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  return "¥" + Number(v).toLocaleString(isZH()?"zh-CN":"en-US", {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtDur(min){
+  min = Math.max(0, Math.round(min||0));
+  const h = Math.floor(min/60), m = min%60;
+  if(isZH()) return h ? (m ? tf("fmtH",{h,m}) : tf("fmtHM",{h})) : tf("fmtM",{m});
+  return h ? (m ? tf("fmtH",{h,m}) : tf("fmtHM",{h})) : tf("fmtM",{m});
+}
+function fmtDay(d){
+  if(isZH()) return (d.getMonth()+1) + "月" + d.getDate() + "日";
+  return new Intl.DateTimeFormat("en-US", {month:"short", day:"numeric"}).format(d);
+}
+function fmtDayShort(d){
+  if(isZH()) return (d.getMonth()+1) + "/" + d.getDate();
+  return new Intl.DateTimeFormat("en-US", {month:"short", day:"numeric"}).format(d);
+}
+function fmtHourLabel(d){
+  const date = fmtDay(d), hour = String(d.getHours()).padStart(2,"0") + ":00";
+  return isZH() ? date + " " + hour : date + " " + hour;
+}
+function fmtHourTick(d, count){
+  const hour = String(d.getHours()).padStart(2,"0") + ":00";
+  if(count > 30 && d.getHours() === 0) return isZH() ? (d.getMonth()+1)+"/"+d.getDate() : (d.getMonth()+1)+"/"+d.getDate();
+  return hour;
+}
+function fmtDate(d){
+  if(isZH()) return (d.getMonth()+1) + "月" + d.getDate() + "日";
+  return new Intl.DateTimeFormat("en-US", {month:"short", day:"numeric"}).format(d);
+}
+/* 本地日期键（YYYY-MM-DD），避免 UTC 时区偏移 */
+function dateKey(ms){
+  const d = new Date(ms);
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+function monthLabel(d){
+  if(isZH()) return (d.getMonth()+1) + "月";
+  return new Intl.DateTimeFormat("en-US", {month:"short"}).format(d);
+}
+function niceTicks(max, count=5){
+  if(max <= 0) return [0, 1];
+  const target = max * 1.08;
+  const rough = target/count, mag = Math.pow(10, Math.floor(Math.log10(rough))), norm = rough/mag;
+  let step; if(norm < 1.5) step = 1; else if(norm < 3) step = 2; else if(norm < 7) step = 5; else step = 10;
+  step *= mag;
+  let top = Math.ceil((target - 1e-9)/step) * step;
+  if(top <= max) top += step;
+  const out = [];
+  for(let i = 0; i <= Math.ceil(top/step); i++) out.push(round2(i*step));
+  return out;
+}
+function round2(v){ return Math.round(v*100)/100; }
+
+/* ---------- 工作月（20 日分界） ---------- */
+function workMonthOf(ms){
+  const d = new Date(ms), y = d.getFullYear(), m = d.getMonth(), day = d.getDate();
+  let sy, sm, ey, em;
+  if(day >= 20){ sy = y; sm = m; ey = (m === 11) ? y+1 : y; em = (m+1) % 12; }
+  else { sy = (m === 0) ? y-1 : y; sm = (m+11) % 12; ey = y; em = m; }
+  const start = new Date(sy, sm, 20).getTime();
+  const end = new Date(ey, em, 19, 23, 59, 59, 999).getTime();
+  return { start, end, label: (sm+1)+".20–"+(em+1)+".19", key: start };
+}
+function listWorkMonths(n){
+  const cur = workMonthOf(Date.now());
+  const arr = [];
+  let start = cur.start;
+  for(let i = 0; i < n; i++){
+    const d = new Date(start), y = d.getFullYear(), m = d.getMonth();
+    const s = new Date(y, m, 20).getTime(), e = new Date(y, m+1, 19, 23, 59, 59, 999).getTime();
+    arr.unshift({ start:s, end:e, label:(m+1)+".20–"+(m+2>12?1:m+2)+".19" });
+    start = new Date(y, m-1, 20).getTime();
+  }
+  return arr;
+}
+function nextSettle(){
+  const n = new Date(); const y = n.getFullYear(), m = n.getMonth(), day = n.getDate();
+  const settle = day >= 20 ? new Date(y, m+1, 20) : new Date(y, m, 20);
+  return { settle, days: Math.round((settle.getTime() - n.getTime())/DAY) };
+}
+
+/* ---------- 聚合 ---------- */
+function aggInRange(from, to){
+  const out = { earn:0, orders:0, minutes:0, n:0 };
+  for(const e of activeEntries()){
+    const ts = new Date(e.ts).getTime();
+    if(ts >= from && ts < to){ out.earn += e.orders * state.settings.rate; out.orders += e.orders; out.minutes += e.minutes||0; out.n++; }
+  }
+  out.earn = round2(out.earn);
+  return out;
+}
+function dailySeries(from, to){
+  const map = new Map();
+  for(const e of activeEntries()){
+    const ts = new Date(e.ts).getTime();
+    if(ts < from || ts >= to) continue;
+    const key = e.date || dateKey(ts);
+    let s = map.get(key); if(!s){ s = {d:new Date(ts), earn:0, orders:0, min:0}; map.set(key, s); }
+    s.earn += e.orders * state.settings.rate; s.orders += e.orders; s.min += e.minutes||0;
+  }
+  const out = [];
+  const n = Math.round((to-from)/DAY);
+  for(let i = 0; i < n; i++){
+    const d = new Date(from + i*DAY);
+    const key = dateKey(d.getTime());
+    const s = map.get(key);
+    out.push({ d, earn: s ? s.earn : 0, orders: s ? s.orders : 0, min: s ? s.min : 0 });
+  }
+  return out;
+}
+function hourlySeries(from, to){
+  const HOUR = 3600000, map = new Map();
+  for(const e of activeEntries()){
+    const ts = new Date(e.ts).getTime();
+    if(ts < from || ts >= to) continue;
+    const index = Math.floor((ts - from) / HOUR);
+    let s = map.get(index); if(!s){ s = {earn:0, orders:0, min:0}; map.set(index, s); }
+    s.earn += e.orders * state.settings.rate; s.orders += e.orders; s.min += e.minutes||0;
+  }
+  const out = [];
+  const n = Math.ceil((to-from)/HOUR);
+  for(let i = 0; i < n; i++){
+    const s = map.get(i);
+    out.push({ d:new Date(from + i*HOUR), earn:s ? s.earn : 0, orders:s ? s.orders : 0, min:s ? s.min : 0 });
+  }
+  return out;
+}
+function isHourlyRange(span){
+  const r = state.settings.range;
+  return r === 1 || r === 3 || (r === "custom" && (span.to-span.from) <= 3*DAY);
+}
+function sumByWorkMonth(months){
+  const list = months.map(mo => {
+    const a = aggInRange(mo.start, mo.end + 1);
+    return { label: mo.label, earn: a.earn, orders: a.orders, minutes: a.minutes };
+  });
+  return list;
+}
+function sumByWeekday(from, to){
+  const w = new Array(7).fill(0);
+  for(const e of activeEntries()){
+    const ts = new Date(e.ts).getTime();
+    if(ts < from || ts >= to) continue;
+    const dow = new Date(ts).getDay(); // 0=Sun
+    const idx = (dow + 6) % 7; // 0=Mon
+    w[idx] += e.orders * state.settings.rate;
+  }
+  return w.map(round2);
+}
+function rangeSpan(){
+  const today = startOfToday();
+  const r = state.settings.range;
+  if(r === "custom"){
+    const custom = customRangeSpan();
+    if(custom) return custom;
+    return { from: today - 29*DAY, to: today + DAY };
+  }
+  if(r === "all"){
+    let min = Infinity;
+    for(const e of activeEntries()){ const ts = new Date(e.ts).getTime(); if(ts < min) min = ts; }
+    if(!isFinite(min)) min = today;
+    const from = new Date(min); from.setHours(0,0,0,0);
+    return { from: from.getTime(), to: today + DAY };
+  }
+  return { from: today - (r-1)*DAY, to: today + DAY };
+}
+function prevSpan(cur){
+  const len = cur.to - cur.from;
+  return { from: cur.from - len, to: cur.from };
+}
+
+function parseDateInput(value){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(value || "")) return null;
+  const [y,m,d] = value.split("-").map(Number);
+  const date = new Date(y, m-1, d);
+  if(date.getFullYear() !== y || date.getMonth() !== m-1 || date.getDate() !== d) return null;
+  return date.getTime();
+}
+function customRangeSpan(){
+  const from = parseDateInput(state.settings.customFrom);
+  const to = parseDateInput(state.settings.customTo);
+  if(from == null || to == null || from > to) return null;
+  return { from, to: to + DAY };
+}
+
+/* ---------- SVG 工具 ---------- */
+let uid = 0;
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, ...kids){
+  const n = document.createElementNS(NS, tag);
+  for(const k in attrs || {}) n.setAttribute(k, attrs[k]);
+  for(const k of kids){ if(k != null) n.appendChild(typeof k === "string" ? document.createTextNode(k) : k); }
+  return n;
+}
+function smoothPath(pts){
+  if(pts.length < 2) return "";
+  if(pts.length === 2) return "M "+pts[0][0]+" "+pts[0][1]+" L "+pts[1][0]+" "+pts[1][1];
+  // Monotone cubic interpolation keeps sharp peaks and zeroes from overshooting.
+  const slopes = [];
+  for(let i = 0; i < pts.length-1; i++) slopes.push((pts[i+1][1]-pts[i][1])/(pts[i+1][0]-pts[i][0]));
+  const tangents = new Array(pts.length);
+  tangents[0] = slopes[0];
+  tangents[pts.length-1] = slopes[slopes.length-1];
+  for(let i = 1; i < pts.length-1; i++){
+    if(slopes[i-1] * slopes[i] <= 0) tangents[i] = 0;
+    else tangents[i] = (slopes[i-1] + slopes[i]) / 2;
+  }
+  let d = "M " + pts[0][0] + " " + pts[0][1];
+  for(let i = 0; i < pts.length-1; i++){
+    const p1 = pts[i], p2 = pts[i+1], dx = p2[0] - p1[0];
+    const c1x = p1[0] + dx/3, c1y = p1[1] + tangents[i]*dx/3;
+    const c2x = p2[0] - dx/3, c2y = p2[1] - tangents[i+1]*dx/3;
+    d += " C " + c1x.toFixed(2) + " " + c1y.toFixed(2) + ", " + c2x.toFixed(2) + " " + c2y.toFixed(2) + ", " + p2[0].toFixed(2) + " " + p2[1].toFixed(2);
+  }
+  return d;
+}
+function roundedTopRect(x, y, w, h, r){
+  r = Math.min(r, w/2, h);
+  if(h <= r) return "M "+x+" "+(y+h)+" L "+x+" "+y+" L "+(x+w)+" "+y+" L "+(x+w)+" "+(y+h)+" Z";
+  return "M "+x+" "+(y+h)+" L "+x+" "+(y+r)+" Q "+x+" "+y+" "+(x+r)+" "+y+
+         " L "+(x+w-r)+" "+y+" Q "+(x+w)+" "+y+" "+(x+w)+" "+(y+r)+" L "+(x+w)+" "+(y+h)+" Z";
+}
+function tooltipRows(rows){
+  return rows.map(r => '<div class="tt-row"><span>'+r[0]+'</span><b>'+r[1]+'</b></div>').join("");
+}
+/* HTML 元素助手（chart 内有时需要 div） */
+function H(tag, cls){ const n = document.createElement(tag); if(cls) n.className = cls; return n; }
+function showTip(tip, container, x, y, html){
+  tip.innerHTML = html;
+  tip.style.display = "block";
+  const cw = container.clientWidth, tw = tip.offsetWidth, th = tip.offsetHeight;
+  let left = x + 16; if(left + tw > cw - 6) left = x - tw - 16;
+  let top = y - th/2; if(top < 6) top = 6; if(top + th > container.clientHeight - 6) top = container.clientHeight - th - 6;
+  tip.style.left = left + "px"; tip.style.top = top + "px";
+}
+function emptyChart(container, msg){
+  container.innerHTML = '<div class="tt-empty"><div class="empty-ic">◌</div>' + esc(msg) + "</div>";
+}
+
+/* ---------- 图表绘制 ---------- */
+const PAL = {
+  heat: { light:["#EFE9DD","#E9D1B9","#E1B796","#D79A72","#C87B4F","#B45F35"],
+          dark: ["#27241D","#3B2C21","#5A3F28","#7E4E30","#A45F38","#C57142"] },
+  donut:{ light:["#C15F3C","#B98D3F","#6E8F6B","#5F7A99"],
+          dark: ["#E89A76","#D6B26A","#9DB99B","#86A0C0"] }
+};
+function heatColors(){ return PAL.heat[effectiveTheme() === "dark" ? "dark" : "light"]; }
+function donutColors(){ return PAL.donut[effectiveTheme() === "dark" ? "dark" : "light"]; }
+function accent(){ return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#C15F3C"; }
+function accent2(){ return getComputedStyle(document.documentElement).getPropertyValue("--accent-2").trim() || "#B2572E"; }
+function hexToRgba(hex, a){
+  let h = String(hex || "").trim().replace("#", "");
+  if(h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  const n = parseInt(h, 16);
+  if(isNaN(n)) return "rgba(193,95,60,"+a+")";
+  return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+","+a+")";
+}
+
+function drawArea(container, days, opts={}){
+  container.innerHTML = "";
+  if(!days.length){ emptyChart(container, t("emptyChart")); return; }
+  const W = Math.max(container.clientWidth || 800, 320), H = 300;
+  const m = {t:16, r:14, b:30, l:46};
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const plotTop = m.t + 10, plotH = ph - 10, plotBottom = m.t + ph;
+  const max = Math.max(0.01, ...days.map(d => d.earn));
+  const ticks = niceTicks(max, 5), ymax = ticks[ticks.length-1];
+  const X = i => days.length > 1 ? m.l + i*(pw/(days.length-1)) : m.l + pw/2;
+  const Y = v => plotTop + plotH*(1 - v/ymax);
+  const svg = el("svg", {viewBox:"0 0 "+W+" "+H, width:W, height:H, class:"chart-svg", role:"img", "aria-label":t("dailyTitle")});
+  const ac = accent(), dark = effectiveTheme() === "dark";
+  const gid = "gArea" + (++uid);
+  const defs = el("defs");
+  const lg = el("linearGradient", {id:gid, x1:0, y1:0, x2:0, y2:1});
+  lg.append(el("stop", {offset:"0%", "stop-color":hexToRgba(ac, dark ? .20 : .15)}));
+  lg.append(el("stop", {offset:"55%", "stop-color":hexToRgba(ac, dark ? .07 : .05)}));
+  lg.append(el("stop", {offset:"100%", "stop-color":hexToRgba(ac, 0)}));
+  defs.append(lg); svg.append(defs);
+  ticks.forEach(v => { svg.append(el("line", {x1:m.l, y1:Y(v), x2:W-m.r, y2:Y(v), class:"grid"})); svg.append(el("text", {x:m.l-8, y:Y(v)+4, class:"tick", "text-anchor":"end"}, numFmt(v))); });
+  const step = Math.max(1, Math.ceil(days.length/7));
+  days.forEach((d, i) => { if(i % step !== 0 && i !== days.length-1) return; svg.append(el("text", {x:X(i), y:H-8, class:"tick", "text-anchor":"middle"}, opts.hourly ? fmtHourTick(d.d, days.length) : fmtDayShort(d.d))); });
+  const pts = days.map((d,i) => [X(i), Y(d.earn)]);
+  if(days.length >= 2){
+    const lineD = smoothPath(pts);
+    svg.append(el("path", {d: lineD + " L " + pts[pts.length-1][0].toFixed(2) + " " + plotBottom + " L " + pts[0][0].toFixed(2) + " " + plotBottom + " Z", class:"area", fill:"url(#"+gid+")"}));
+    svg.append(el("path", {d:lineD, fill:"none", class:"line"}));
+  } else {
+    svg.append(el("circle", {cx:pts[0][0], cy:pts[0][1], r:3.5, class:"dot"}));
+  }
+  svg.append(el("line", {x1:m.l, y1:plotBottom, x2:W-m.r, y2:plotBottom, class:"axis"}));
+  const last = pts[pts.length-1];
+  svg.append(el("circle", {cx:last[0], cy:last[1], r:6, class:"dot-ring"}));
+  svg.append(el("circle", {cx:last[0], cy:last[1], r:3.5, class:"dot"}));
+  const overlay = el("rect", {x:m.l, y:plotTop, width:pw, height:plotH, fill:"transparent", class:"hit"});
+  svg.append(overlay);
+  const tip = document.createElement("div"); tip.className = "tt";
+  let cross = null, cdot = null;
+  overlay.addEventListener("pointermove", e => {
+    const rect = container.getBoundingClientRect();
+    let idx = days.length > 1 ? Math.round(((e.clientX - rect.left) - m.l)/(pw/(days.length-1))) : 0;
+    idx = Math.max(0, Math.min(days.length-1, idx));
+    if(!cross){ cross = el("line", {class:"cross"}); svg.append(cross); cdot = el("circle", {class:"dot-ring"}); svg.append(cdot); }
+    cross.setAttribute("x1", X(idx)); cross.setAttribute("x2", X(idx)); cross.setAttribute("y1", plotTop); cross.setAttribute("y2", plotBottom); cross.setAttribute("opacity", 1);
+    cdot.setAttribute("cx", X(idx)); cdot.setAttribute("cy", Y(days[idx].earn));
+    const d = days[idx];
+    showTip(tip, container, e.clientX - rect.left, e.clientY - rect.top,
+      '<div class="tt-title">'+(opts.hourly ? fmtHourLabel(d.d) : fmtDay(d.d))+'</div>' +
+      tooltipRows([ [t("earn"), fmtMoney(d.earn)], [t("orders"), numFmt(d.orders)], [t("timeSpent"), fmtDur(d.min)] ]));
+  });
+  overlay.addEventListener("pointerleave", () => { tip.style.display = "none"; if(cross) cross.setAttribute("opacity", 0); });
+  container.append(svg, tip);
+  if(!reduceMotion()){
+    svg.style.clipPath = "inset(0 100% 0 0)";
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      svg.style.transition = "clip-path 900ms cubic-bezier(.4,0,.2,1)";
+      svg.style.clipPath = "inset(0 0 0 0)";
+    }));
+  }
+}
+
+function drawBars(container, months){
+  container.innerHTML = "";
+  if(!months.length){ emptyChart(container, t("emptyChart")); return; }
+  const W = Math.max(container.clientWidth || 460, 300), H = 280;
+  const m = {t:22, r:10, b:38, l:46};
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const plotTop = m.t + 10, plotH = ph - 10, plotBottom = m.t + ph;
+  const max = Math.max(0.01, ...months.map(x => x.earn));
+  const ticks = niceTicks(max, 5), ymax = ticks[ticks.length-1];
+  const svg = el("svg", {viewBox:"0 0 "+W+" "+H, width:W, height:H, class:"chart-svg", role:"img", "aria-label":t("monthTitle")});
+  ticks.forEach(v => { const y = plotTop + plotH*(1 - v/ymax); svg.append(el("line", {x1:m.l, y1:y, x2:W-m.r, y2:y, class:"grid"})); svg.append(el("text", {x:m.l-8, y:y+4, class:"tick", "text-anchor":"end"}, numFmt(v))); });
+  svg.append(el("line", {x1:m.l, y1:plotBottom, x2:W-m.r, y2:plotBottom, class:"axis"}));
+  const n = months.length, band = pw/n, bw = Math.min(26, band*0.5);
+  const ac = accent(), ac2 = accent2();
+  const tip = document.createElement("div"); tip.className = "tt";
+  months.forEach((mo, i) => {
+    const cx = m.l + band*i + band/2, x0 = cx - bw/2;
+    const h = Math.min(plotH - 2, Math.max(0, (mo.earn/ymax)*plotH)), top = Math.max(plotTop, plotBottom - h);
+    const isCur = i === n-1;
+    const bar = el("path", {d:roundedTopRect(x0, top, bw, h, 4), class:"bar"+(isCur?"":" bar-past"), fill:isCur?ac2:ac});
+    svg.append(bar);
+    svg.append(el("text", {x:cx, y:H-8, class:"tick", "text-anchor":"middle"}, mo.label));
+    if(isCur && h > 22) svg.append(el("text", {x:cx, y:Math.max(plotTop+12, top-8), class:"tick", "text-anchor":"middle", "font-weight":"700", fill:ac}, fmtMoney(mo.earn)));
+    const hit = el("rect", {x:m.l+band*i, y:plotTop, width:band, height:plotH, fill:"transparent"});
+    hit.addEventListener("pointermove", e => {
+      const rect = container.getBoundingClientRect();
+      showTip(tip, container, e.clientX - rect.left, e.clientY - rect.top,
+        '<div class="tt-title">'+esc(mo.label)+'</div>' +
+        tooltipRows([ [t("earn"), fmtMoney(mo.earn)], [t("orders"), numFmt(mo.orders)], [t("timeSpent"), fmtDur(mo.minutes)] ]));
+    });
+    hit.addEventListener("pointerleave", () => tip.style.display = "none");
+    svg.append(hit);
+  });
+  container.append(svg, tip);
+}
+
+function drawHeatmap(container, days){
+  container.innerHTML = "";
+  const hasData = days.some(d => d.earn > 0);
+  if(!days.length || !hasData){ emptyChart(container, t("emptyChart")); return; }
+  const max = Math.max(...days.map(d => d.earn));
+  const colors = heatColors();
+  // 12 周网格：月份轴、星期轴和单元格各自负责一种信息。
+  const now = new Date(); const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dow = today.getDay(); const monday = (dow + 6) % 7; // 距周一的天数
+  const endColStart = new Date(today); endColStart.setDate(today.getDate() - monday);
+  const cols = 12;
+  const byDate = new Map(days.map(d => [dateKey(d.d.getTime()), d]));
+  const grid = [];
+  for(let c = 0; c < cols; c++){
+    const colStart = new Date(endColStart); colStart.setDate(endColStart.getDate() - (cols-1-c)*7);
+    const col = [];
+    for(let r = 0; r < 7; r++){ const dd = new Date(colStart); dd.setDate(colStart.getDate() + r); col.push(dd); }
+    grid.push(col);
+  }
+  const tip = document.createElement("div"); tip.className = "tt";
+  const shell = H("div", "heatmap-shell");
+  const yLabels = H("div", "heatmap-y-labels");
+  [0,2,4,6].forEach(r => { const label = H("span"); label.textContent = t("daysShort")[r]; yLabels.append(label); });
+  const main = H("div", "heatmap-main");
+  const months = H("div", "heatmap-months");
+  grid.forEach((col, c) => {
+    const label = H("span");
+    const d = col[0], prev = c > 0 ? grid[c-1][0] : null;
+    label.textContent = !prev || d.getMonth() !== prev.getMonth() || d.getFullYear() !== prev.getFullYear() ? monthLabel(d) : "";
+    months.append(label);
+  });
+  const gridEl = H("div", "heatmap-grid");
+  gridEl.setAttribute("role", "grid");
+  gridEl.setAttribute("aria-label", t("heatTitle"));
+  grid.forEach((col) => {
+    col.forEach((dd) => {
+      const day = byDate.get(dateKey(dd.getTime()));
+      const v = day ? day.earn : 0;
+      const level = v <= 0 ? 0 : Math.min(5, Math.ceil((v/max)*5));
+      const cell = H("button", "heatmap-cell heatmap-level-" + level);
+      cell.type = "button";
+      cell.style.setProperty("--heat-color", colors[level]);
+      cell.setAttribute("role", "gridcell");
+      cell.setAttribute("aria-label", fmtDay(dd) + " · " + fmtMoney(v));
+      const show = e => {
+        const rect = container.getBoundingClientRect();
+        const box = cell.getBoundingClientRect();
+        const x = e && e.clientX ? e.clientX - rect.left : box.left - rect.left + box.width/2;
+        const y = e && e.clientY ? e.clientY - rect.top : box.top - rect.top + box.height/2;
+        showTip(tip, container, x, y,
+          '<div class="tt-title">'+fmtDay(dd)+'</div>' +
+          tooltipRows([ [t("earn"), fmtMoney(v)], [t("orders"), numFmt(day ? day.orders : 0)], [t("timeSpent"), fmtDur(day ? day.min : 0)] ]));
+      };
+      cell.addEventListener("pointerenter", show);
+      cell.addEventListener("pointermove", show);
+      cell.addEventListener("focus", show);
+      cell.addEventListener("pointerleave", () => { tip.style.display = "none"; });
+      cell.addEventListener("blur", () => { tip.style.display = "none"; });
+      gridEl.append(cell);
+    });
+  });
+  main.append(months, gridEl);
+  shell.append(yLabels, main);
+  container.append(shell, tip);
+}
+
+function drawDonut(container, items, total){
+  container.innerHTML = "";
+  if(!items.length || total <= 0){ emptyChart(container, t("emptyChart")); return; }
+  const S = 168, cx = S/2, cy = S/2, R = 62, SW = 26;
+  const colors = donutColors();
+  const svg = el("svg", {viewBox:"0 0 "+S+" "+S, width:S, height:S, class:"chart-svg donut-svg", role:"img", "aria-label":t("sessionTitle")});
+  const gap = items.length > 1 ? 2.5 : 0;
+  let acc = 0;
+  const tip = document.createElement("div"); tip.className = "tt";
+  items.forEach((it, i) => {
+    const frac = it.value/total;
+    if(frac <= 0) return;
+    const a0 = (acc)*Math.PI*2 - Math.PI/2 + (gap/2)*(Math.PI/180);
+    const a1 = (acc+frac)*Math.PI*2 - Math.PI/2 - (gap/2)*(Math.PI/180);
+    const x0 = cx + R*Math.cos(a0), y0 = cy + R*Math.sin(a0);
+    const x1 = cx + R*Math.cos(a1), y1 = cy + R*Math.sin(a1);
+    const large = (a1 - a0) > Math.PI ? 1 : 0;
+    const d = "M "+x0.toFixed(2)+" "+y0.toFixed(2)+" A "+R+" "+R+" 0 "+large+" 1 "+x1.toFixed(2)+" "+y1.toFixed(2);
+    const seg = el("path", {d, fill:"none", stroke:colors[i], "stroke-width":SW, "stroke-linecap":"butt", class:"donut-seg"});
+    seg.addEventListener("pointermove", e => {
+      const rect = container.getBoundingClientRect();
+      showTip(tip, container, e.clientX - rect.left, e.clientY - rect.top,
+        '<div class="tt-title">'+esc(it.label)+'</div>' +
+        tooltipRows([ [t("earn"), fmtMoney(it.value)], [t("timeSpent"), fmtDur(it.minutes)], [t("orders"), numFmt(it.orders)] ]));
+    });
+    seg.addEventListener("pointerleave", () => tip.style.display = "none");
+    svg.append(seg);
+    acc += frac;
+  });
+  svg.append(el("text", {x:cx, y:cy+2, "text-anchor":"middle", class:"tick", "font-size":"15", "font-weight":"700", fill:"var(--ink)"}, fmtMoney(total)));
+  svg.append(el("text", {x:cx, y:cy+18, "text-anchor":"middle", class:"tick"}, t("earn")));
+  const leg = H("div", "legend");
+  items.forEach((it, i) => {
+    const row = H("div", "legend-item");
+    row.innerHTML = '<span class="swatch" style="background:'+colors[i]+'"></span><span>'+esc(it.label)+'</span><span class="pct">'+
+      (total>0?Math.round(it.value/total*100):0)+'%</span><b>'+fmtMoney(it.value)+'</b>';
+    leg.append(row);
+  });
+  const box = H("div", "donut-box");
+  box.append(svg, leg);
+  container.append(box, tip);
+}
+
+function drawHBars(container, items){
+  container.innerHTML = "";
+  const has = items.some(i => i.value > 0);
+  if(!has){ emptyChart(container, t("emptyChart")); return; }
+  const max = Math.max(...items.map(i => i.value));
+  const box = H("div");
+  const ac = accent(), ac2 = accent2();
+  items.forEach((it) => {
+    const row = H("div", "hbar-row");
+    const lbl = H("span", "hbar-label"); lbl.textContent = it.label;
+    const track = H("div", "hbar-track");
+    const fill = H("div", "hbar-fill"+(it.cur ? " cur" : ""));
+    fill.style.background = it.cur ? ac2 : ac;
+    fill.style.width = "0%";
+    track.append(fill);
+    const val = H("span", "hbar-val"); val.textContent = fmtMoney(it.value);
+    row.append(lbl, track, val);
+    box.append(row);
+    requestAnimationFrame(() => { fill.style.width = (max>0 ? (it.value/max)*100 : 0) + "%"; });
+  });
+  container.append(box);
+}
+
+/* ---------- KPI 卡片 ---------- */
+function kpiCard(label, value, delta, sparkData, opts){
+  const card = document.createElement("div"); card.className = "kpi";
+  const up = delta > 0.0005, down = delta < -0.0005;
+  const d = document.createElement("div"); d.className = "kpi-delta " + (up?"up":down?"down":"flat");
+  d.innerHTML = (up?"▲ ":"") + (down?"▼ ":"") + (up||down ? Math.abs(delta*100).toFixed(1)+"%" : "–") +
+    '<span class="why"> · '+esc(t("vsPrev"))+'</span>';
+  const sp = document.createElement("div"); sp.className = "kpi-spark";
+  sp.innerHTML = sparklineSVG(sparkData);
+  card.innerHTML = '<div class="kpi-label">'+esc(label)+'</div><div class="kpi-value" data-v="0"></div>';
+  card.append(d, sp);
+  const val = card.querySelector(".kpi-value");
+  val.dataset.v = 0;
+  animateValue(val, value, opts);
+  return card;
+}
+function sparklineSVG(data){
+  if(!data || !data.length) data = [0];
+  const w = 110, h = 34, pad = 3;
+  const min = Math.min(...data), max = Math.max(...data), r = (max-min) || 1;
+  const pts = data.map((v,i) => (i/(data.length-1 || 1))*w + "," + (h - pad - ((v-min)/r)*(h-pad*2))).join(" ");
+  return '<svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'" preserveAspectRatio="none"><polyline points="'+pts+'" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/></svg>';
+}
+function animateValue(node, to, fmt){
+  const reduce = reduceMotion();
+  const from = parseFloat(node.dataset.v) || 0;
+  node.dataset.v = to;
+  if(reduce){ node.textContent = fmt(to); return; }
+  const t0 = performance.now(), dur = 650;
+  const ease = t => 1 - Math.pow(1-t, 3);
+  function frame(now){
+    const p = Math.min(1, (now-t0)/dur);
+    node.textContent = fmt(from + (to-from)*ease(p));
+    if(p < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- 渲染 ---------- */
+function applyFontWeights(){
+  document.documentElement.style.setProperty("--font-weight-cjk", 600);
+  document.documentElement.style.setProperty("--font-weight-latin", 600);
+  document.documentElement.style.setProperty("--display-weight", 600);
+}
+
+function applyLang(){
+  document.documentElement.lang = isZH() ? "zh-CN" : "en";
+  applyFontWeights();
+  document.title = IS_DEMO_PAGE ? (isZH() ? "工分 · 演示" : "WorkPoints · Demo") : (isZH() ? "工分 · WorkPoints" : "WorkPoints · 工分");
+  document.getElementById("brandName").textContent = t("brand");
+  document.getElementById("brandSub").textContent = IS_DEMO_PAGE ? (isZH() ? "WorkPoints · 演示数据" : "WorkPoints · Demo data") : t("brandSub");
+  document.getElementById("footNote").textContent = t("footNote");
+  document.querySelectorAll("[data-i18n]").forEach(n => { n.textContent = t(n.getAttribute("data-i18n")); });
+  document.getElementById("brandBadge").textContent = state.settings.currency === "USD" ? "$" : "¥";
+}
+
+function makeSeg(containerId, options, getVal, onPick){
+  const cont = document.getElementById(containerId);
+  cont.innerHTML = "";
+  options.forEach(o => {
+    const b = document.createElement("button");
+    b.className = "seg-opt"; b.textContent = o.label; b.dataset.v = o.v;
+    b.setAttribute("role", "tab");
+    b.addEventListener("click", () => { if(String(getVal()) !== String(o.v)){ onPick(o.v); sync(); } });
+    cont.append(b);
+  });
+  const sync = () => [...cont.children].forEach(b => b.classList.toggle("active", String(getVal()) === String(b.dataset.v)));
+  sync();
+  return sync;
+}
+
+function renderSegments(){
+  const s = state.settings;
+  makeSeg("langSeg", [{v:"zh", label:"中"},{v:"en", label:"EN"}], () => s.lang, v => { s.lang = v; saveSettings(); renderAll(); });
+  makeSeg("curSeg", [{v:"CNY", label:"¥"},{v:"USD", label:"$"}], () => s.currency, v => { s.currency = v; saveSettings(); applyLang(); renderAll(); });
+  const rangeValues = [1,3,7,15,30,60,90,"all"];
+  makeSeg("rangeSeg",
+    [1,3,7,15,30,60,90].map(r => ({v:r, label: (isZH()? "近"+r+"日" : r+"D")})).concat([{v:"all", label:t("rangeTotal")}]),
+    () => s.range, v => { s.range = v; saveSettings(); renderAll(); });
+  const rangeSeg = document.getElementById("rangeSeg");
+  const rangeIndex = rangeValues.indexOf(s.range);
+  rangeSeg.style.setProperty("--range-index", String(Math.max(0, rangeIndex)));
+  rangeSeg.classList.toggle("custom-selected", s.range === "custom");
+  const customButton = document.getElementById("rangeCustomBtn");
+  const customSpan = customRangeSpan();
+  customButton.classList.toggle("active", s.range === "custom");
+  customButton.setAttribute("aria-pressed", s.range === "custom" ? "true" : "false");
+  document.getElementById("rangeNote").textContent = s.range === "custom" && customSpan
+    ? tf("customSelected", {from:fmtDate(new Date(customSpan.from)), to:fmtDate(new Date(customSpan.to-DAY))})
+    : t("customRangeBtn");
+}
+
+function renderHero(){
+  const wm = workMonthOf(Date.now());
+  const a = aggInRange(wm.start, wm.end + 1);
+  const n = nextSettle();
+  const today = new Date();
+  const daysInMonth = Math.round((wm.end - wm.start)/DAY) + 1;
+  const elapsed = Math.max(0, Math.min(daysInMonth, Math.round((Date.now() - wm.start)/DAY) + 1));
+  const pct = Math.min(1, Math.max(0, elapsed/daysInMonth));
+  document.getElementById("heroWorkMonth").textContent = wm.label;
+  document.getElementById("heroSettle").textContent = fmtDate(n.settle);
+  document.getElementById("heroCountdown").innerHTML = today.getDate() === 20 ? "<b>"+t("settleToday")+"</b>" : "<b>"+tf("daysLeft", {n:n.days})+"</b>";
+  const fig = document.getElementById("heroFigure");
+  const hourly = a.minutes > 0 ? a.earn/(a.minutes/60) : 0;
+  document.getElementById("heroSub").innerHTML =
+    tf(isZH() ? "本月 {n} 单 · 耗时 {d} · 累计 {m}" : "{n} orders · {d} logged · {m} total",
+      {n:numFmt(a.orders), d:fmtDur(a.minutes), m:fmtMoney(a.earn)});
+  animateValue(fig, a.earn, fmtMoney);
+  const span = rangeSpan();
+  const curAgg = aggInRange(span.from, span.to);
+  const days = Math.round((span.to - span.from)/DAY);
+  document.getElementById("heroDaily").textContent = fmtMoney(curAgg.earn/(days||1));
+  document.getElementById("heroHourly").textContent = fmtMoney(hourly);
+  // 进度环
+  const ring = document.getElementById("heroRing");
+  const C = 2*Math.PI*26;
+  ring.innerHTML = '<svg width="72" height="72" viewBox="0 0 72 72">'+
+    '<circle cx="36" cy="36" r="26" fill="none" stroke="var(--surface-2)" stroke-width="7"/>'+
+    '<circle id="ringFg" cx="36" cy="36" r="26" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+C+'" transform="rotate(-90 36 36)"/>'+
+    '<text x="36" y="40" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)" font-family="var(--font-sans)">'+Math.round(pct*100)+'%</text></svg>';
+  requestAnimationFrame(() => { const fg = document.getElementById("ringFg"); fg.style.transition = "stroke-dashoffset 900ms cubic-bezier(.4,0,.2,1)"; fg.setAttribute("stroke-dashoffset", C*(1-pct)); });
+}
+
+function renderKpis(){
+  const wrap = document.getElementById("kpis");
+  wrap.innerHTML = "";
+  const span = rangeSpan(), prev = prevSpan(span);
+  const cur = aggInRange(span.from, span.to), pre = aggInRange(prev.from, prev.to);
+  const delta = (a, b) => b > 0 ? (a-b)/b : (a > 0 ? 1 : 0);
+  const days = dailySeries(span.from, span.to);
+  const spark = a => days.slice(Math.max(0, days.length-12)).map(d => d[a]);
+  const hourlyCur = cur.minutes > 0 ? cur.earn/(cur.minutes/60) : 0;
+  const hourlyPre = pre.minutes > 0 ? pre.earn/(pre.minutes/60) : 0;
+  const cards = [
+    kpiCard(t("earn"), cur.earn, delta(cur.earn, pre.earn), spark("earn"), fmtMoney),
+    kpiCard(t("orders"), cur.orders, delta(cur.orders, pre.orders), spark("orders"), v => numFmt(v)),
+    kpiCard(t("timeSpent"), cur.minutes, delta(cur.minutes, pre.minutes), spark("min"), v => fmtDur(v)),
+    kpiCard(t("hourlyRate"), hourlyCur, delta(hourlyCur, hourlyPre), days.map(d => d.min > 0 ? d.earn/(d.min/60) : 0), fmtMoney)
+  ];
+  cards.forEach(c => wrap.append(c));
+}
+
+function renderCharts(){
+  const span = rangeSpan();
+  const hourly = isHourlyRange(span);
+  const daily = hourly ? hourlySeries(span.from, span.to) : dailySeries(span.from, span.to);
+  const today = new Date();
+  const wd = sumByWeekday(span.from, span.to);
+  const wdIdx = (today.getDay() + 6) % 7;
+  // 每日
+  document.getElementById("dailySub").textContent = tf(hourly ? "hourlySub" : "dailySub", {range: spanLabel()});
+  drawArea(document.getElementById("dailyChart"), daily, {hourly});
+  // 工作月
+  const months = sumByWorkMonth(listWorkMonths(7));
+  drawBars(document.getElementById("monthChart"), months);
+  // 热力（近 84 日）
+  const from = startOfToday() - 83*DAY;
+  drawHeatmap(document.getElementById("heatChart"), dailySeries(from, startOfToday()+DAY));
+  // 时段
+  const sess = [0,0,0,0], sessMin = [0,0,0,0], sessOrd = [0,0,0,0];
+  for(const e of activeEntries()){
+    const ts=new Date(e.ts).getTime(); if(ts<span.from||ts>=span.to) continue;
+    const i = hIdx(e);
+    sess[i] += e.orders * state.settings.rate;
+    sessMin[i] += e.minutes||0;
+    sessOrd[i] += e.orders;
+  }
+  const sessTotal = sess.reduce((a,b)=>a+b,0);
+  drawDonut(document.getElementById("sessionChart"),
+    t("segs").map((label,i) => ({label, value:round2(sess[i]), minutes:sessMin[i], orders:sessOrd[i]})), round2(sessTotal));
+  // 星期
+  const wdItems = t("days").map((label,i) => ({label, value:wd[i], cur: i === wdIdx}));
+  drawHBars(document.getElementById("weekdayChart"), wdItems);
+}
+function hIdx(e){ const h = e.startHour != null ? e.startHour : e.endHour != null ? e.endHour : new Date(e.ts).getHours(); return h<6?0:h<12?1:h<18?2:3; }
+function spanLabel(){
+  const r = state.settings.range;
+  if(r === "all") return t("rangeTotal");
+  if(r === "custom"){
+    const custom = customRangeSpan();
+    return custom ? tf("customSelected", {from:fmtDate(new Date(custom.from)), to:fmtDate(new Date(custom.to-DAY))}) : t("customRangeBtn");
+  }
+  return isZH() ? "近"+r+"日" : "last "+r+" days";
+}
+
+function renderTable(){
+  const wrap = document.getElementById("tableWrap");
+  const list = activeEntries().slice().sort((a,b) => b.ts.localeCompare(a.ts)).slice(0, 30);
+  if(!list.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-ic">📝</div>'+esc(t("empty"))+'</div>';
+    return;
+  }
+  const zh = isZH();
+  const head = '<table><thead><tr>'+
+    ["thDate","thSession","thOrders","thTime","thEarn","thNote","thOp"].map(k => '<th>'+esc(t(k))+'</th>').join("") +
+    '</tr></thead><tbody>';
+  const rows = list.map(e => {
+    const ts = new Date(e.ts);
+    const earn = e.orders * state.settings.rate;
+    const ses = e.startHour != null || e.endHour != null ? t("segs")[hIdx(e)] : (zh ? "—" : "—");
+    return '<tr>' +
+      '<td class="mono">'+fmtDay(ts)+'</td>' +
+      '<td>'+ses+'</td>' +
+      '<td class="mono">'+numFmt(e.orders)+'</td>' +
+      '<td class="mono">'+fmtDur(e.minutes)+'</td>' +
+      '<td class="mono" style="font-weight:600">'+fmtMoney(earn)+'</td>' +
+      '<td class="note" title="'+esc(e.note||"")+'">'+esc(e.note||"")+'</td>' +
+      '<td><button class="del-btn" data-id="'+esc(e.id)+'" aria-label="delete">✕</button></td>' +
+      '</tr>';
+  }).join("");
+  wrap.innerHTML = head + rows + "</tbody></table>";
+  wrap.querySelectorAll(".del-btn").forEach(btn => btn.addEventListener("click", () => delEntry(btn.dataset.id)));
+}
+
+function delEntry(id){
+  const list = activeEntries();
+  const idx = list.findIndex(e => e.id === id);
+  if(idx < 0) return;
+  const removed = list.splice(idx, 1)[0];
+  saveActiveEntries();
+  toast(t("toastDeleted"), () => {
+    list.push(removed);
+    saveActiveEntries();
+    renderAll();
+    toast(t("undoRestored"));
+  });
+  renderAll();
+}
+
+/* ---------- 表单 ---------- */
+function initForm(){
+  document.getElementById("inDate").value = new Date().toISOString().slice(0,10);
+  const upd = () => {
+    const o = +document.getElementById("inOrders").value || 0;
+    document.getElementById("formPreview").textContent = fmtMoney(o * state.settings.rate);
+  };
+  document.getElementById("inOrders").addEventListener("input", upd);
+  document.getElementById("inHours").addEventListener("input", upd);
+  document.getElementById("entryForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const date = document.getElementById("inDate").value;
+    const start = document.getElementById("inStart").value;
+    const end = document.getElementById("inEnd").value;
+    const hours = Math.max(0, +document.getElementById("inHours").value || 0);
+    const minutes = Math.round(hours * 60);
+    const orders = +document.getElementById("inOrders").value;
+    if(!date || !orders || orders < 1){ toast(t("errOrders")); return; }
+    const [y,mo,d] = date.split("-").map(Number);
+    let startHour = null;
+    let endHour = null;
+    if(start){ const [hh] = start.split(":").map(Number); startHour = hh; }
+    if(end){ const [hh] = end.split(":").map(Number); endHour = hh; }
+    const anchorHour = startHour != null ? startHour : (endHour != null ? endHour : 12);
+    const ts = new Date(y, mo-1, d, anchorHour).getTime();
+    const entry = {
+      id: "e"+Date.now().toString(36)+Math.floor(Math.random()*1e4),
+      ts: new Date(ts).toISOString(),
+      date, startHour, endHour, minutes, orders,
+      note: document.getElementById("inNote").value.trim()
+    };
+    activeEntries().push(entry);
+    saveActiveEntries();
+    document.getElementById("inOrders").value = "";
+    document.getElementById("inHours").value = "";
+    document.getElementById("inNote").value = "";
+    document.getElementById("inStart").value = "";
+    document.getElementById("inEnd").value = "";
+    document.getElementById("formPreview").textContent = fmtMoney(0);
+    renderAll();
+    toast(t("toastAdded"));
+  });
+}
+
+/* ---------- 主题 ---------- */
+function effectiveTheme(){
+  const th = state.settings.theme;
+  if(th !== "auto") return th;
+  return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+function applyTheme(){
+  const eff = effectiveTheme();
+  document.documentElement.dataset.theme = eff;
+  const btn = document.getElementById("themeBtn");
+  const icon = state.settings.theme === "dark" ? sunSVG() : state.settings.theme === "light" ? moonSVG() : autoSVG();
+  btn.innerHTML = icon;
+  btn.setAttribute("aria-label", t(state.settings.theme === "light" ? "setThemeLight" : state.settings.theme === "dark" ? "setThemeDark" : "setThemeAuto"));
+  renderCharts();
+}
+function sunSVG(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>'; }
+function moonSVG(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.5 6.5 0 0 0 9.5 9.5Z"/></svg>'; }
+function autoSVG(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2" opacity=".4"/></svg>'; }
+
+/* ---------- 设置弹层 ---------- */
+function initSettings(){
+  const pop = document.getElementById("settingsPop");
+  const btn = document.getElementById("settingsBtn");
+  const r = document.getElementById("setRate"), u = document.getElementById("setUsd");
+  r.value = state.settings.rate; u.value = state.settings.cnyPerUsd;
+  const open = () => { pop.classList.add("open"); };
+  const close = () => pop.classList.remove("open");
+  btn.addEventListener("click", e => { e.stopPropagation(); pop.classList.contains("open") ? close() : open(); });
+  document.addEventListener("pointerdown", e => { if(!pop.contains(e.target) && !btn.contains(e.target)) close(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape") close(); });
+  r.addEventListener("change", () => { state.settings.rate = Math.max(0, parseFloat(r.value) || 0); saveSettings(); renderAll(); });
+  u.addEventListener("change", () => { state.settings.cnyPerUsd = Math.max(0.01, parseFloat(u.value) || 0); saveSettings(); renderAll(); });
+  document.getElementById("btnExport").addEventListener("click", exportData);
+  document.getElementById("btnImport").addEventListener("click", () => document.getElementById("fileImport").click());
+  document.getElementById("fileImport").addEventListener("change", importData);
+  document.getElementById("btnClear").addEventListener("click", () => {
+    confirmModal(t("clearTitle"), t("clearMsg"), () => {
+      const list = activeEntries(); list.splice(0, list.length); saveActiveEntries(); renderAll(); toast(t("toastCleared"));
+    });
+  });
+  document.getElementById("themeBtn").addEventListener("click", () => {
+    const order = ["light", "dark", "auto"];
+    const idx = order.indexOf(state.settings.theme);
+    state.settings.theme = order[(idx+1) % 3];
+    saveSettings(); applyTheme(); applyLang();
+  });
+}
+
+function initRangePicker(){
+  const wrap = document.querySelector(".range-custom-wrap");
+  const pop = document.getElementById("rangePop");
+  const btn = document.getElementById("rangeCustomBtn");
+  const from = document.getElementById("customFrom"), to = document.getElementById("customTo");
+  const syncInputs = () => {
+    from.value = state.settings.customFrom || dateKey(startOfToday() - 29*DAY);
+    to.value = state.settings.customTo || dateKey(startOfToday());
+  };
+  const open = () => { syncInputs(); pop.classList.add("open"); pop.setAttribute("aria-hidden", "false"); btn.setAttribute("aria-expanded", "true"); };
+  const close = () => { pop.classList.remove("open"); pop.setAttribute("aria-hidden", "true"); btn.setAttribute("aria-expanded", "false"); };
+  btn.addEventListener("click", e => { e.stopPropagation(); pop.classList.contains("open") ? close() : open(); });
+  document.addEventListener("pointerdown", e => { if(!wrap.contains(e.target)) close(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape") close(); });
+  document.getElementById("customApply").addEventListener("click", () => {
+    const start = parseDateInput(from.value), end = parseDateInput(to.value);
+    if(start == null || end == null || start > end){ toast(t("customInvalid")); return; }
+    state.settings.customFrom = from.value;
+    state.settings.customTo = to.value;
+    state.settings.range = "custom";
+    saveSettings(); close(); renderAll();
+  });
+  document.getElementById("customReset").addEventListener("click", () => {
+    state.settings.customFrom = ""; state.settings.customTo = ""; state.settings.range = 30;
+    saveSettings(); close(); renderAll();
+  });
+}
+
+function exportData(){
+  const data = { app:"workpoints", version:1, exportedAt:new Date().toISOString(), settings:state.settings, entries:state.entries };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "工分-数据备份-" + new Date().toISOString().slice(0,10) + ".json";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast(t("toastExported"));
+}
+function importData(e){
+  const f = e.target.files[0];
+  if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try{
+      const d = JSON.parse(rd.result);
+      const arr = Array.isArray(d) ? d : (d && d.entries) || [];
+      if(!arr.length) throw new Error("empty");
+      const valid = arr.filter(x => x && typeof x.orders === "number" && x.ts);
+      const target = activeEntries();
+      target.splice(0, target.length, ...valid);
+      saveActiveEntries();
+      renderAll();
+      toast(tf("toastImported", {n:valid.length}));
+    }catch(err){ toast(t("importErr")); }
+  };
+  rd.readAsText(f);
+  e.target.value = "";
+}
+
+/* ---------- 弹窗 / 提示 ---------- */
+let modalCb = null;
+function confirmModal(title, msg, cb){
+  document.getElementById("modalTitle").textContent = title;
+  document.getElementById("modalMsg").textContent = msg;
+  modalCb = cb;
+  document.getElementById("modalMask").classList.add("open");
+}
+document.getElementById("modalCancel").addEventListener("click", () => document.getElementById("modalMask").classList.remove("open"));
+document.getElementById("modalOk").addEventListener("click", () => {
+  document.getElementById("modalMask").classList.remove("open");
+  if(modalCb){ modalCb(); modalCb = null; }
+});
+document.getElementById("modalMask").addEventListener("pointerdown", e => { if(e.target.id === "modalMask") e.target.classList.remove("open"); });
+
+function toast(msg, action){
+  const box = document.getElementById("toasts");
+  const tEl = document.createElement("div"); tEl.className = "toast";
+  const span = document.createElement("span"); span.textContent = msg;
+  tEl.append(span);
+  if(action){
+    const b = document.createElement("button"); b.className = "toast-act"; b.textContent = t("toastUndo");
+    b.addEventListener("click", () => { action(); tEl.classList.add("out"); setTimeout(() => tEl.remove(), 300); });
+    tEl.append(b);
+  }
+  box.append(tEl);
+  setTimeout(() => { tEl.classList.add("out"); setTimeout(() => tEl.remove(), 300); }, 3600);
+}
+
+/* ---------- 主流程 ---------- */
+function renderAll(){
+  applyLang();
+  renderSegments();
+  renderHero();
+  renderKpis();
+  renderCharts();
+  renderTable();
+}
+
+window.addEventListener("resize", (() => { let t; return () => { clearTimeout(t); t = setTimeout(renderCharts, 140); }; })());
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if(state.settings.theme === "auto") applyTheme(); });
+
+document.addEventListener("DOMContentLoaded", () => {
+  initForm();
+  initSettings();
+  initRangePicker();
+  applyTheme();
+  renderAll();
+});
+</script>
+</body>
+</html>
