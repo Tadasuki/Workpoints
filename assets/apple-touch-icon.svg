@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="工分">
+  <rect width="180" height="180" rx="42" fill="#C15F3C"/>
+  <path d="M48 55h84M56 82h68M48 109h84M70 136h40" fill="none" stroke="#FBF9F6" stroke-width="11" stroke-linecap="round"/>
+  <circle cx="90" cy="90" r="68" fill="none" stroke="#FBF9F6" stroke-opacity=".22" stroke-width="5"/>
+</svg>

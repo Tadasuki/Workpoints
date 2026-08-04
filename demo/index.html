@@ -4,8 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>工分 · WorkPoints</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23C15F3C'/%3E%3Ctext x='16' y='22' font-size='17' font-family='system-ui' font-weight='700' fill='%23FBF9F6' text-anchor='middle'%3E¥%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="../assets/icon.svg">
+<link rel="mask-icon" href="../assets/icon.svg" color="#C15F3C">
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="工分">
 <style>
+@font-face{
+  font-family:"Anthropic Serif";
+  src:url("../assets/fonts/AnthropicSerif-Text-Semibold-Static.otf") format("opentype");
+  font-style:normal; font-weight:600; font-display:swap;
+}
+@font-face{
+  font-family:"Source Han Serif SC";
+  src:url("../assets/fonts/SourceHanSerif-Semibold.ttc") format("truetype");
+  font-style:normal; font-weight:600; font-display:swap;
+}
 /* ============ 设计令牌 ============ */
 :root{
   --font-display: "Anthropic Serif", "Source Han Serif SC", "思源宋体", "Iowan Old Style", "Songti SC", Palatino, Georgia, serif;
@@ -164,6 +179,16 @@ main{max-width:1060px; margin:0 auto; padding:22px 20px calc(64px + env(safe-are
 .chart-head h2{font-size:15px; font-weight:700; letter-spacing:-.01em}
 .chart-head p{font-size:12px; color:var(--muted); margin-top:3px}
 .chart-body{position:relative}
+.month-chart-scroll{
+  width:100%; overflow-x:auto; overflow-y:hidden; padding:0 2px 7px;
+  overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch;
+  touch-action:pan-x; scrollbar-width:thin; scrollbar-color:var(--accent-soft) transparent;
+}
+.month-chart-scroll::-webkit-scrollbar{height:5px}
+.month-chart-scroll::-webkit-scrollbar-track{background:transparent}
+.month-chart-scroll::-webkit-scrollbar-thumb{background:var(--accent-soft); border-radius:999px}
+.month-chart-stage{width:max-content; min-width:100%}
+.month-chart-stage .chart-svg{width:auto; max-width:none}
 .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px}
 
 /* ============ 图表元素 ============ */
@@ -530,6 +555,7 @@ body{font-weight:600}
 .custom-range-fields .field{gap:6px}
 .custom-range-fields input{width:100%; height:38px; padding:0 9px; font-size:12px}
 .custom-range-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line)}
+.mobile-safe-control{min-height:40px}
 
 @media (max-width:900px){
   header{padding-left:18px; padding-right:18px}
@@ -551,6 +577,8 @@ body{font-weight:600}
   .kpi::before{left:16px}
   .kpi-value{font-size:24px}
   .chart-card{padding:19px 17px 15px}
+  .month-chart-scroll{margin:0 -3px; padding-left:3px; padding-right:3px}
+  .month-chart-stage{min-width:100%}
   .chart-head h2{font-size:17px}
   .range-row{flex-wrap:nowrap; align-items:center}
   #rangeSeg{flex:1; min-width:0}
@@ -564,6 +592,13 @@ body{font-weight:600}
   .grid-2 > *{min-width:0}
   .table-wrap{min-width:0; max-width:100%}
   .popover{top:auto; bottom:calc(20px + env(safe-area-inset-bottom)); right:14px; left:14px; transform-origin:bottom center}
+  .set-row{align-items:flex-start}
+  .set-row label{line-height:1.4; max-width:68%}
+  .set-row input{width:104px; flex:none}
+  .form-fields{grid-template-columns:1fr}
+  .field.wide{grid-column:auto}
+  .form-foot{align-items:stretch}
+  .form-foot .btn{width:100%; min-height:44px}
 }
 @media (prefers-reduced-motion: reduce){
   #rangeSeg::before,.range-popover,.heatmap-cell{transition:none!important}
@@ -655,7 +690,7 @@ body{font-weight:600}
   <div class="grid-2">
     <div class="card chart-card">
       <div class="chart-head">
-        <div><h2 data-i18n="monthTitle">工作月收入</h2><p data-i18n="monthSub">每个工作月 · 20日结算</p></div>
+        <div><h2 data-i18n="monthTitle">工作月收入</h2><p id="monthSub">每个工作月 · 20日结算</p></div>
       </div>
       <div class="chart-body" id="monthChart"></div>
     </div>
@@ -723,6 +758,7 @@ body{font-weight:600}
   <div class="set-block">
     <div class="set-row"><label data-i18n="rateLabel">每单收入（元）</label><input type="number" id="setRate" step="0.005" min="0"></div>
     <div class="set-row"><label data-i18n="usdLabel">汇率 · 1 USD = ? CNY</label><input type="number" id="setUsd" step="0.01" min="0"></div>
+    <div class="set-row"><label data-i18n="settleDayLabel">每月结算日（1–28日）</label><input type="number" id="setSettleDay" min="1" max="28" step="1" inputmode="numeric"></div>
   </div>
   <div class="set-block">
     <div class="set-btns">
@@ -768,7 +804,7 @@ const I18N = {
     orders:"单数", timeSpent:"耗时", earn:"收入", hourlyRate:"时薪",
     vsPrev:"较上个周期",
     dailyTitle:"工钱趋势", dailySub:"每日收入 · {range}", hourlySub:"每小时收入 · {range}",
-    monthTitle:"工作月收入", monthSub:"每个工作月 · 20日结算",
+    monthTitle:"工作月收入", monthSub:"每个工作月 · {day}日结算",
     heatTitle:"近12周热力", heatSub:"每日收入热力",
     sessionTitle:"时段分布", sessionSub:"不同时段赚取的工钱",
     weekdayTitle:"星期分布", weekdaySub:"一周各天赚取的工钱",
@@ -785,8 +821,8 @@ const I18N = {
     toastCleared:"已清空全部数据", toastImported:"导入成功 · 共 {n} 条", toastExported:"已导出备份",
     importErr:"导入失败：文件格式不正确",
     undoRestored:"已恢复", confirmDel:"删除这条记录？",
-    settingsTitle:"设置", settingsSub:"单价与汇率 · 数据管理",
-    rateLabel:"每单收入（元）", usdLabel:"汇率 · 1 USD = ? CNY",
+    settingsTitle:"设置", settingsSub:"单价、结算日与数据管理",
+    rateLabel:"每单收入（元）", usdLabel:"汇率 · 1 USD = ? CNY", settleDayLabel:"每月结算日（1–28日）",
     exportBtn:"导出数据", importBtn:"导入数据", clearBtn:"清空数据", setNote:"导入将替换当前记录 · 建议先导出备份",
     clearTitle:"清空全部数据？", clearMsg:"此操作不可恢复，确定要删除所有记录吗？建议先导出备份。",
     cancel:"取消", confirm:"确认",
@@ -806,7 +842,7 @@ const I18N = {
     orders:"Orders", timeSpent:"Time", earn:"Earned", hourlyRate:"Hourly",
     vsPrev:"vs prev. period",
     dailyTitle:"Earnings trend", dailySub:"Per-day earnings · {range}", hourlySub:"Hourly earnings · {range}",
-    monthTitle:"Work-month earnings", monthSub:"Each work month · paid on the 20th",
+    monthTitle:"Work-month earnings", monthSub:"Each work month · paid on the {day}th",
     heatTitle:"Last 12 weeks", heatSub:"Daily earnings heatmap",
     sessionTitle:"By session time", sessionSub:"Earnings by time of day",
     weekdayTitle:"By weekday", weekdaySub:"Earnings by day of week",
@@ -823,8 +859,8 @@ const I18N = {
     toastCleared:"All data cleared", toastImported:"Imported · {n} entries", toastExported:"Backup exported",
     importErr:"Import failed: invalid file",
     undoRestored:"Restored", confirmDel:"Delete this entry?",
-    settingsTitle:"Settings", settingsSub:"Rate · currency · data",
-    rateLabel:"Rate per order (CNY)", usdLabel:"Exchange · 1 USD = ? CNY",
+    settingsTitle:"Settings", settingsSub:"Rate · settlement day · data",
+    rateLabel:"Rate per order (CNY)", usdLabel:"Exchange · 1 USD = ? CNY", settleDayLabel:"Monthly settlement day (1–28)",
     exportBtn:"Export", importBtn:"Import", clearBtn:"Clear all", setNote:"Import replaces current records — export a backup first.",
     clearTitle:"Clear all data?", clearMsg:"This cannot be undone. Export a backup first.",
     cancel:"Cancel", confirm:"Confirm",
@@ -839,7 +875,7 @@ const I18N = {
 /* ---------- 状态 ---------- */
 const LS_ENT = "wp.entries.v1", LS_SET = "wp.settings.v1";
 const IS_DEMO_PAGE = /\/demo(?:\/index\.html)?\/?$/.test(location.pathname);
-const DEFAULTS = { lang:"zh", currency:"CNY", theme:"auto", rate:0.05, cnyPerUsd:6.75, demo:false, range:30, customFrom:"", customTo:"" };
+const DEFAULTS = { lang:"zh", currency:"CNY", theme:"auto", rate:0.05, cnyPerUsd:6.75, settleDay:20, demo:false, range:30, customFrom:"", customTo:"" };
 
 function loadSettings(){
   try{
@@ -972,31 +1008,52 @@ function niceTicks(max, count=5){
 }
 function round2(v){ return Math.round(v*100)/100; }
 
-/* ---------- 工作月（20 日分界） ---------- */
+/* ---------- 工作月 ---------- */
+function getSettleDay(){
+  const day = Number(state.settings.settleDay);
+  return Number.isFinite(day) ? Math.min(28, Math.max(1, Math.round(day))) : DEFAULTS.settleDay;
+}
+function settleDateForMonth(year, month){ return new Date(year, month, getSettleDay()); }
+function workMonthForStart(year, month){
+  const startDate = settleDateForMonth(year, month);
+  const endDate = new Date(year, month+1, getSettleDay()-1, 23, 59, 59, 999);
+  return {
+    start:startDate.getTime(), end:endDate.getTime(),
+    label:(startDate.getMonth()+1)+"."+startDate.getDate()+"–"+(endDate.getMonth()+1)+"."+endDate.getDate(),
+    key:startDate.getTime()
+  };
+}
 function workMonthOf(ms){
-  const d = new Date(ms), y = d.getFullYear(), m = d.getMonth(), day = d.getDate();
-  let sy, sm, ey, em;
-  if(day >= 20){ sy = y; sm = m; ey = (m === 11) ? y+1 : y; em = (m+1) % 12; }
-  else { sy = (m === 0) ? y-1 : y; sm = (m+11) % 12; ey = y; em = m; }
-  const start = new Date(sy, sm, 20).getTime();
-  const end = new Date(ey, em, 19, 23, 59, 59, 999).getTime();
-  return { start, end, label: (sm+1)+".20–"+(em+1)+".19", key: start };
+  const d = new Date(ms), settleDay = getSettleDay();
+  const startDate = d.getDate() >= settleDay
+    ? settleDateForMonth(d.getFullYear(), d.getMonth())
+    : settleDateForMonth(d.getFullYear(), d.getMonth()-1);
+  return workMonthForStart(startDate.getFullYear(), startDate.getMonth());
 }
 function listWorkMonths(n){
-  const cur = workMonthOf(Date.now());
-  const arr = [];
-  let start = cur.start;
-  for(let i = 0; i < n; i++){
-    const d = new Date(start), y = d.getFullYear(), m = d.getMonth();
-    const s = new Date(y, m, 20).getTime(), e = new Date(y, m+1, 19, 23, 59, 59, 999).getTime();
-    arr.unshift({ start:s, end:e, label:(m+1)+".20–"+(m+2>12?1:m+2)+".19" });
-    start = new Date(y, m-1, 20).getTime();
-  }
+  const cur = workMonthOf(Date.now()), d = new Date(cur.start), arr = [];
+  for(let i = 0; i < n; i++) arr.unshift(workMonthForStart(d.getFullYear(), d.getMonth()-i));
   return arr;
 }
+function workMonthsForChart(){
+  const current = workMonthOf(Date.now());
+  const dataMonths = new Map([[current.key, current]]);
+  for(const e of activeEntries()){
+    const month = workMonthOf(new Date(e.ts).getTime());
+    dataMonths.set(month.key, month);
+  }
+  const minStart = Math.min(...dataMonths.keys()), months = [];
+  const cursor = new Date(minStart);
+  cursor.setDate(getSettleDay()); cursor.setHours(0,0,0,0);
+  while(cursor.getTime() <= current.start){
+    months.push(workMonthForStart(cursor.getFullYear(), cursor.getMonth()));
+    cursor.setMonth(cursor.getMonth()+1);
+  }
+  return months;
+}
 function nextSettle(){
-  const n = new Date(); const y = n.getFullYear(), m = n.getMonth(), day = n.getDate();
-  const settle = day >= 20 ? new Date(y, m+1, 20) : new Date(y, m, 20);
+  const n = new Date(); const y = n.getFullYear(), m = n.getMonth(), day = n.getDate(), settleDay = getSettleDay();
+  const settle = day >= settleDay ? settleDateForMonth(y, m+1) : settleDateForMonth(y, m);
   return { settle, days: Math.round((settle.getTime() - n.getTime())/DAY) };
 }
 
@@ -1242,8 +1299,9 @@ function drawArea(container, days, opts={}){
 function drawBars(container, months){
   container.innerHTML = "";
   if(!months.length){ emptyChart(container, t("emptyChart")); return; }
-  const W = Math.max(container.clientWidth || 460, 300), H = 280;
+  const viewportWidth = Math.max(container.clientWidth || 460, 300), H = 280;
   const m = {t:22, r:10, b:38, l:46};
+  const W = Math.max(viewportWidth, m.l + m.r + months.length * 112);
   const pw = W - m.l - m.r, ph = H - m.t - m.b;
   const plotTop = m.t + 10, plotH = ph - 10, plotBottom = m.t + ph;
   const max = Math.max(0.01, ...months.map(x => x.earn));
@@ -1251,7 +1309,7 @@ function drawBars(container, months){
   const svg = el("svg", {viewBox:"0 0 "+W+" "+H, width:W, height:H, class:"chart-svg", role:"img", "aria-label":t("monthTitle")});
   ticks.forEach(v => { const y = plotTop + plotH*(1 - v/ymax); svg.append(el("line", {x1:m.l, y1:y, x2:W-m.r, y2:y, class:"grid"})); svg.append(el("text", {x:m.l-8, y:y+4, class:"tick", "text-anchor":"end"}, numFmt(v))); });
   svg.append(el("line", {x1:m.l, y1:plotBottom, x2:W-m.r, y2:plotBottom, class:"axis"}));
-  const n = months.length, band = pw/n, bw = Math.min(26, band*0.5);
+  const n = months.length, band = pw/n, bw = Math.min(42, band*0.42);
   const ac = accent(), ac2 = accent2();
   const tip = document.createElement("div"); tip.className = "tt";
   months.forEach((mo, i) => {
@@ -1272,7 +1330,11 @@ function drawBars(container, months){
     hit.addEventListener("pointerleave", () => tip.style.display = "none");
     svg.append(hit);
   });
-  container.append(svg, tip);
+  const scroll = document.createElement("div"); scroll.className = "month-chart-scroll";
+  const stage = document.createElement("div"); stage.className = "month-chart-stage";
+  stage.append(svg); scroll.append(stage); container.append(scroll, tip);
+  scroll.addEventListener("scroll", () => { tip.style.display = "none"; }, {passive:true});
+  requestAnimationFrame(() => { scroll.scrollLeft = scroll.scrollWidth; });
 }
 
 function drawHeatmap(container, days){
@@ -1460,6 +1522,7 @@ function applyLang(){
   document.getElementById("brandSub").textContent = IS_DEMO_PAGE ? (isZH() ? "WorkPoints · 演示数据" : "WorkPoints · Demo data") : t("brandSub");
   document.getElementById("footNote").textContent = t("footNote");
   document.querySelectorAll("[data-i18n]").forEach(n => { n.textContent = t(n.getAttribute("data-i18n")); });
+  document.getElementById("monthSub").textContent = tf("monthSub", {day:getSettleDay()});
   document.getElementById("brandBadge").textContent = state.settings.currency === "USD" ? "$" : "¥";
 }
 
@@ -1509,7 +1572,7 @@ function renderHero(){
   const pct = Math.min(1, Math.max(0, elapsed/daysInMonth));
   document.getElementById("heroWorkMonth").textContent = wm.label;
   document.getElementById("heroSettle").textContent = fmtDate(n.settle);
-  document.getElementById("heroCountdown").innerHTML = today.getDate() === 20 ? "<b>"+t("settleToday")+"</b>" : "<b>"+tf("daysLeft", {n:n.days})+"</b>";
+  document.getElementById("heroCountdown").innerHTML = today.getDate() === getSettleDay() ? "<b>"+t("settleToday")+"</b>" : "<b>"+tf("daysLeft", {n:n.days})+"</b>";
   const fig = document.getElementById("heroFigure");
   const hourly = a.minutes > 0 ? a.earn/(a.minutes/60) : 0;
   document.getElementById("heroSub").innerHTML =
@@ -1561,7 +1624,7 @@ function renderCharts(){
   document.getElementById("dailySub").textContent = tf(hourly ? "hourlySub" : "dailySub", {range: spanLabel()});
   drawArea(document.getElementById("dailyChart"), daily, {hourly});
   // 工作月
-  const months = sumByWorkMonth(listWorkMonths(7));
+  const months = sumByWorkMonth(workMonthsForChart());
   drawBars(document.getElementById("monthChart"), months);
   // 热力（近 84 日）
   const from = startOfToday() - 83*DAY;
@@ -1704,8 +1767,8 @@ function autoSVG(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="current
 function initSettings(){
   const pop = document.getElementById("settingsPop");
   const btn = document.getElementById("settingsBtn");
-  const r = document.getElementById("setRate"), u = document.getElementById("setUsd");
-  r.value = state.settings.rate; u.value = state.settings.cnyPerUsd;
+  const r = document.getElementById("setRate"), u = document.getElementById("setUsd"), sd = document.getElementById("setSettleDay");
+  r.value = state.settings.rate; u.value = state.settings.cnyPerUsd; sd.value = getSettleDay();
   const open = () => { pop.classList.add("open"); };
   const close = () => pop.classList.remove("open");
   btn.addEventListener("click", e => { e.stopPropagation(); pop.classList.contains("open") ? close() : open(); });
@@ -1713,6 +1776,13 @@ function initSettings(){
   document.addEventListener("keydown", e => { if(e.key === "Escape") close(); });
   r.addEventListener("change", () => { state.settings.rate = Math.max(0, parseFloat(r.value) || 0); saveSettings(); renderAll(); });
   u.addEventListener("change", () => { state.settings.cnyPerUsd = Math.max(0.01, parseFloat(u.value) || 0); saveSettings(); renderAll(); });
+  const commitSettleDay = () => {
+    state.settings.settleDay = Math.min(28, Math.max(1, Math.round(parseFloat(sd.value) || DEFAULTS.settleDay)));
+    sd.value = getSettleDay(); saveSettings(); renderAll();
+  };
+  sd.addEventListener("change", commitSettleDay);
+  sd.addEventListener("blur", commitSettleDay);
+  sd.addEventListener("keydown", e => { if(e.key === "Enter") commitSettleDay(); });
   document.getElementById("btnExport").addEventListener("click", exportData);
   document.getElementById("btnImport").addEventListener("click", () => document.getElementById("fileImport").click());
   document.getElementById("fileImport").addEventListener("change", importData);
