@@ -43,13 +43,27 @@
 
 ## Google Drive 同步
 
-网页已内置 Google OAuth Web Client ID，设置中不需要填写 Client ID。首次使用前，请在 Google Cloud Console 完成以下配置：
+网页已内置 Google OAuth Web Client ID，设置中不需要填写 Client ID。首次使用前，请按下面教程配置 Google Cloud。
 
-1. 启用 **Google Drive API**。
-2. OAuth Client 类型选择 **Web application**。
-3. 在 **Authorized JavaScript origins** 添加：`https://w-p.pages.dev` 和 `http://localhost:4173`。
-4. **Authorized redirect URIs 留空**，当前网页使用 Google Identity Services Token 模式，不使用重定向回调。
-5. 如 OAuth 应用处于 Testing 状态，将自己的 Google 账号加入 Test users。
+### 申请入口
+
+- [创建 Google Cloud 项目](https://console.cloud.google.com/projectcreate)
+- [启用 Google Drive API](https://console.cloud.google.com/apis/library/drive.googleapis.com)
+- [配置 OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent)
+- [创建 OAuth Client ID](https://console.cloud.google.com/apis/credentials)
+
+### 配置步骤
+
+1. 打开「创建 Google Cloud 项目」，新建或选择一个项目。
+2. 打开「启用 Google Drive API」，确认当前项目正确后点击启用。
+3. 进入 OAuth consent screen：用户类型选择 **External**，填写应用名称、用户支持邮箱和开发者联系邮箱。
+4. 在 Scopes 页面继续下一步即可；如果应用处于 **Testing** 状态，在 Test users 中添加自己的 Google 账号。
+5. 进入 Credentials → Create credentials → OAuth client ID，Application type 选择 **Web application**。
+6. 在 **Authorized JavaScript origins** 添加：`https://w-p.pages.dev` 和 `http://localhost:4173`。只填写 Origin，不要添加路径、结尾斜杠或 `/demo`。
+7. **Authorized redirect URIs 留空**。本网页使用 Google Identity Services Token 模式，不使用重定向回调。
+8. 保存后，网页设置中会直接显示「连接 Google Drive」，点击并完成 Google 授权即可。
+
+如果换了正式域名，需要把新的 `https://你的域名` 也加入 Authorized JavaScript origins；`/demo` 不需要单独添加。Google Client ID 可以公开放在前端，但 Client Secret 不要放进网页。
 
 打开网页「设置」后点击「连接 Google Drive」，授权完成后即可使用「同步到 Drive」和「从 Drive 恢复」。数据使用 `drive.appdata` 权限，保存在该应用的私有 Drive 空间，不会出现在普通 Drive 文件列表中。
 
