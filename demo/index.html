@@ -321,6 +321,12 @@ td .mono{font-variant-numeric:tabular-nums}
 .set-row input{width:96px; height:32px; padding:0 10px; text-align:right; font-size:13px; background:var(--surface-2); border:1px solid var(--hairline); border-radius:8px; font-variant-numeric:tabular-nums}
 .set-row input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
 .set-btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
+.set-row-stack{display:block}
+.set-row-stack label{display:block; margin-bottom:8px}
+.set-row-stack input{width:100%; text-align:left}
+.drive-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+.drive-actions .btn{flex:1 1 120px}
+.drive-status{font-size:11px; color:var(--muted); margin-top:10px; line-height:1.45; min-height:16px}
 .set-note{font-size:11px; color:var(--muted); margin-top:12px; line-height:1.5}
 
 /* ============ 弹窗 + 提示 ============ */
@@ -731,7 +737,7 @@ body{font-weight:600}
           <div class="field"><label data-i18n="fDate">日期</label><input type="date" id="inDate"></div>
           <div class="field"><label data-i18n="fStart">开始时间（可选）</label><input type="time" id="inStart"></div>
           <div class="field"><label data-i18n="fEnd">结束时间（可选）</label><input type="time" id="inEnd"></div>
-          <div class="field"><label data-i18n="fHours">耗时（小时）</label><input type="number" id="inHours" min="0" step="0.5" inputmode="decimal" placeholder="0"></div>
+          <div class="field"><label data-i18n="fHours">耗时（小时）</label><input type="number" id="inHours" min="0" step="any" inputmode="decimal" placeholder="0"></div>
           <div class="field"><label data-i18n="fOrders">单数 *</label><input type="number" id="inOrders" min="1" step="1" inputmode="numeric" placeholder="0"></div>
           <div class="field wide"><label data-i18n="fNote">备注（可选）</label><input type="text" id="inNote" maxlength="40" placeholder="例如：晚班 8-11 点"></div>
         </div>
@@ -764,6 +770,15 @@ body{font-weight:600}
     <div class="set-row"><label data-i18n="settleDayLabel">每月结算日（1–28日）</label><input type="number" id="setSettleDay" min="1" max="28" step="1" inputmode="numeric"></div>
   </div>
   <div class="set-block">
+    <div class="set-row set-row-stack"><label data-i18n="driveClientLabel">Google Drive Client ID</label><input type="text" id="setGoogleClientId" autocomplete="off" spellcheck="false" placeholder="...apps.googleusercontent.com"></div>
+    <div class="drive-actions">
+      <button class="btn btn-ghost" id="btnDriveConnect" type="button" data-i18n="driveConnect">连接 Google Drive</button>
+      <button class="btn btn-ghost" id="btnDriveSync" type="button" data-i18n="driveSync" disabled>同步到 Drive</button>
+      <button class="btn btn-ghost" id="btnDriveRestore" type="button" data-i18n="driveRestore" disabled>从 Drive 恢复</button>
+    </div>
+    <p class="drive-status" id="driveStatus"></p>
+  </div>
+  <div class="set-block">
     <div class="set-btns">
       <button class="btn btn-ghost" id="btnExport" data-i18n="exportBtn">导出数据</button>
       <button class="btn btn-ghost" id="btnImport" data-i18n="importBtn">导入数据</button>
@@ -788,6 +803,7 @@ body{font-weight:600}
 
 <div class="toasts" id="toasts"></div>
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
 "use strict";
 /* ============================================================
@@ -824,8 +840,9 @@ const I18N = {
     toastCleared:"已清空全部数据", toastImported:"导入成功 · 共 {n} 条", toastExported:"已导出备份",
     importErr:"导入失败：文件格式不正确",
     undoRestored:"已恢复", confirmDel:"删除这条记录？",
-    settingsTitle:"设置", settingsSub:"单价、结算日与数据管理",
+    settingsTitle:"设置", settingsSub:"单价、结算日、Google Drive 与数据管理",
     rateLabel:"每单收入（元）", usdLabel:"汇率 · 1 USD = ? CNY", settleDayLabel:"每月结算日（1–28日）",
+    driveClientLabel:"Google Drive Client ID", driveConnect:"连接 Google Drive", driveSync:"同步到 Drive", driveRestore:"从 Drive 恢复", driveNeedClient:"请先填写 Google OAuth Web Client ID", driveReady:"填写 Client ID 后连接 Google Drive", driveConnected:"Google Drive 已连接", driveSyncing:"正在同步…", driveUploaded:"已同步到 Google Drive", driveRestored:"已从 Google Drive 恢复", driveNoFile:"Drive 中还没有 WorkPoints 备份", driveError:"Google Drive 同步失败", driveNote:"数据保存在 Google Drive 的私有应用空间",
     exportBtn:"导出数据", importBtn:"导入数据", clearBtn:"清空数据", setNote:"导入将替换当前记录 · 建议先导出备份",
     clearTitle:"清空全部数据？", clearMsg:"此操作不可恢复，确定要删除所有记录吗？建议先导出备份。",
     cancel:"取消", confirm:"确认",
@@ -862,8 +879,9 @@ const I18N = {
     toastCleared:"All data cleared", toastImported:"Imported · {n} entries", toastExported:"Backup exported",
     importErr:"Import failed: invalid file",
     undoRestored:"Restored", confirmDel:"Delete this entry?",
-    settingsTitle:"Settings", settingsSub:"Rate · settlement day · data",
+    settingsTitle:"Settings", settingsSub:"Rate · settlement day · Google Drive · data",
     rateLabel:"Rate per order (CNY)", usdLabel:"Exchange · 1 USD = ? CNY", settleDayLabel:"Monthly settlement day (1–28)",
+    driveClientLabel:"Google Drive Client ID", driveConnect:"Connect Google Drive", driveSync:"Sync to Drive", driveRestore:"Restore from Drive", driveNeedClient:"Enter a Google OAuth Web Client ID first", driveReady:"Enter a Client ID to connect Google Drive", driveConnected:"Google Drive connected", driveSyncing:"Syncing…", driveUploaded:"Synced to Google Drive", driveRestored:"Restored from Google Drive", driveNoFile:"No WorkPoints backup found in Drive", driveError:"Google Drive sync failed", driveNote:"Data is stored in Drive's private app space",
     exportBtn:"Export", importBtn:"Import", clearBtn:"Clear all", setNote:"Import replaces current records — export a backup first.",
     clearTitle:"Clear all data?", clearMsg:"This cannot be undone. Export a backup first.",
     cancel:"Cancel", confirm:"Confirm",
@@ -878,7 +896,7 @@ const I18N = {
 /* ---------- 状态 ---------- */
 const LS_ENT = "wp.entries.v1", LS_SET = "wp.settings.v1";
 const IS_DEMO_PAGE = /\/demo(?:\/index\.html)?\/?$/.test(location.pathname);
-const DEFAULTS = { lang:"zh", currency:"CNY", theme:"auto", rate:0.05, cnyPerUsd:6.75, settleDay:20, demo:false, range:30, customFrom:"", customTo:"" };
+const DEFAULTS = { lang:"zh", currency:"CNY", theme:"auto", rate:0.05, cnyPerUsd:6.75, settleDay:20, googleClientId:"", demo:false, range:30, customFrom:"", customTo:"" };
 
 function loadSettings(){
   try{
@@ -962,11 +980,19 @@ function fmtMoney(v){
   return "¥" + Number(v).toLocaleString(isZH()?"zh-CN":"en-US", {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 function fmtDur(min){
-  min = Math.max(0, Math.round(min||0));
-  const h = Math.floor(min/60), m = min%60;
+  min = Math.max(0, Number(min)||0);
+  const h = Math.floor(min/60), m = round2(min - h*60);
   if(isZH()) return h ? (m ? tf("fmtH",{h,m}) : tf("fmtHM",{h})) : tf("fmtM",{m});
   return h ? (m ? tf("fmtH",{h,m}) : tf("fmtHM",{h})) : tf("fmtM",{m});
 }
+function fmtHoursValue(hours){
+  const value = Math.max(0, Number(hours)||0).toLocaleString(isZH()?"zh-CN":"en-US", {maximumFractionDigits:4});
+  return tf("fmtHM", {h:value});
+}
+function entryMinutes(e){
+  return e && e.hours != null ? Math.max(0, Number(e.hours)||0) * 60 : Math.max(0, Number(e && e.minutes)||0);
+}
+function fmtEntryDuration(e){ return e && e.hours != null ? fmtHoursValue(e.hours) : fmtDur(e && e.minutes); }
 function fmtDay(d){
   if(isZH()) return (d.getMonth()+1) + "月" + d.getDate() + "日";
   return new Intl.DateTimeFormat("en-US", {month:"short", day:"numeric"}).format(d);
@@ -1065,7 +1091,7 @@ function aggInRange(from, to){
   const out = { earn:0, orders:0, minutes:0, n:0 };
   for(const e of activeEntries()){
     const ts = new Date(e.ts).getTime();
-    if(ts >= from && ts < to){ out.earn += e.orders * state.settings.rate; out.orders += e.orders; out.minutes += e.minutes||0; out.n++; }
+    if(ts >= from && ts < to){ out.earn += e.orders * state.settings.rate; out.orders += e.orders; out.minutes += entryMinutes(e); out.n++; }
   }
   out.earn = round2(out.earn);
   return out;
@@ -1077,7 +1103,7 @@ function dailySeries(from, to){
     if(ts < from || ts >= to) continue;
     const key = e.date || dateKey(ts);
     let s = map.get(key); if(!s){ s = {d:new Date(ts), earn:0, orders:0, min:0}; map.set(key, s); }
-    s.earn += e.orders * state.settings.rate; s.orders += e.orders; s.min += e.minutes||0;
+    s.earn += e.orders * state.settings.rate; s.orders += e.orders; s.min += entryMinutes(e);
   }
   const out = [];
   const n = Math.round((to-from)/DAY);
@@ -1096,7 +1122,7 @@ function hourlySeries(from, to){
     if(ts < from || ts >= to) continue;
     const index = Math.floor((ts - from) / HOUR);
     let s = map.get(index); if(!s){ s = {earn:0, orders:0, min:0}; map.set(index, s); }
-    s.earn += e.orders * state.settings.rate; s.orders += e.orders; s.min += e.minutes||0;
+    s.earn += e.orders * state.settings.rate; s.orders += e.orders; s.min += entryMinutes(e);
   }
   const out = [];
   const n = Math.ceil((to-from)/HOUR);
@@ -1535,6 +1561,7 @@ function applyLang(){
   document.querySelectorAll("[data-i18n]").forEach(n => { n.textContent = t(n.getAttribute("data-i18n")); });
   document.getElementById("monthSub").textContent = tf("monthSub", {day:getSettleDay()});
   document.getElementById("brandBadge").textContent = state.settings.currency === "USD" ? "$" : "¥";
+  renderDriveControls();
 }
 
 function makeSeg(containerId, options, getVal, onPick){
@@ -1646,7 +1673,7 @@ function renderCharts(){
     const ts=new Date(e.ts).getTime(); if(ts<span.from||ts>=span.to) continue;
     const i = hIdx(e);
     sess[i] += e.orders * state.settings.rate;
-    sessMin[i] += e.minutes||0;
+    sessMin[i] += entryMinutes(e);
     sessOrd[i] += e.orders;
   }
   const sessTotal = sess.reduce((a,b)=>a+b,0);
@@ -1686,7 +1713,7 @@ function renderTable(){
       '<td class="mono">'+fmtDay(ts)+'</td>' +
       '<td>'+ses+'</td>' +
       '<td class="mono">'+numFmt(e.orders)+'</td>' +
-      '<td class="mono">'+fmtDur(e.minutes)+'</td>' +
+      '<td class="mono">'+fmtEntryDuration(e)+'</td>' +
       '<td class="mono" style="font-weight:600">'+fmtMoney(earn)+'</td>' +
       '<td class="note" title="'+esc(e.note||"")+'">'+esc(e.note||"")+'</td>' +
       '<td><button class="del-btn" data-id="'+esc(e.id)+'" aria-label="delete">✕</button></td>' +
@@ -1726,7 +1753,7 @@ function initForm(){
     const start = document.getElementById("inStart").value;
     const end = document.getElementById("inEnd").value;
     const hours = Math.max(0, +document.getElementById("inHours").value || 0);
-    const minutes = Math.round(hours * 60);
+    const minutes = hours * 60;
     const orders = +document.getElementById("inOrders").value;
     if(!date || !orders || orders < 1){ toast(t("errOrders")); return; }
     const [y,mo,d] = date.split("-").map(Number);
@@ -1739,7 +1766,7 @@ function initForm(){
     const entry = {
       id: "e"+Date.now().toString(36)+Math.floor(Math.random()*1e4),
       ts: new Date(ts).toISOString(),
-      date, startHour, endHour, minutes, orders,
+      date, startHour, endHour, hours, minutes, orders,
       note: document.getElementById("inNote").value.trim()
     };
     activeEntries().push(entry);
@@ -1778,8 +1805,8 @@ function autoSVG(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="current
 function initSettings(){
   const pop = document.getElementById("settingsPop");
   const btn = document.getElementById("settingsBtn");
-  const r = document.getElementById("setRate"), u = document.getElementById("setUsd"), sd = document.getElementById("setSettleDay");
-  r.value = state.settings.rate; u.value = state.settings.cnyPerUsd; sd.value = getSettleDay();
+  const r = document.getElementById("setRate"), u = document.getElementById("setUsd"), sd = document.getElementById("setSettleDay"), gc = document.getElementById("setGoogleClientId");
+  r.value = state.settings.rate; u.value = state.settings.cnyPerUsd; sd.value = getSettleDay(); gc.value = getDriveClientId();
   const open = () => { pop.classList.add("open"); };
   const close = () => pop.classList.remove("open");
   btn.addEventListener("click", e => { e.stopPropagation(); pop.classList.contains("open") ? close() : open(); });
@@ -1794,6 +1821,14 @@ function initSettings(){
   sd.addEventListener("change", commitSettleDay);
   sd.addEventListener("blur", commitSettleDay);
   sd.addEventListener("keydown", e => { if(e.key === "Enter") commitSettleDay(); });
+  const commitClientId = () => {
+    state.settings.googleClientId = gc.value.trim(); driveAccessToken = ""; driveTokenExpiresAt = 0; driveTokenClient = null; saveSettings(); renderDriveControls();
+  };
+  gc.addEventListener("change", commitClientId);
+  gc.addEventListener("blur", commitClientId);
+  document.getElementById("btnDriveConnect").addEventListener("click", () => connectDrive().then(() => { setDriveStatus("driveConnected"); }).catch(() => setDriveStatus("driveError")));
+  document.getElementById("btnDriveSync").addEventListener("click", syncToDrive);
+  document.getElementById("btnDriveRestore").addEventListener("click", restoreFromDrive);
   document.getElementById("btnExport").addEventListener("click", exportData);
   document.getElementById("btnImport").addEventListener("click", () => document.getElementById("fileImport").click());
   document.getElementById("fileImport").addEventListener("change", importData);
@@ -1808,6 +1843,7 @@ function initSettings(){
     state.settings.theme = order[(idx+1) % 3];
     saveSettings(); applyTheme(); applyLang();
   });
+  renderDriveControls();
 }
 
 function initRangePicker(){
@@ -1867,6 +1903,117 @@ function importData(e){
   };
   rd.readAsText(f);
   e.target.value = "";
+}
+
+/* ---------- Google Drive ---------- */
+const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.appdata";
+const DRIVE_FILE_NAME = "WorkPoints Sync.json";
+let driveAccessToken = "", driveTokenExpiresAt = 0, driveTokenClient = null, driveTokenClientId = "";
+
+function getDriveClientId(){ return String(state.settings.googleClientId || "").trim(); }
+function waitForGoogleIdentity(){
+  if(window.google && google.accounts && google.accounts.oauth2) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const started = Date.now();
+    const timer = setInterval(() => {
+      if(window.google && google.accounts && google.accounts.oauth2){ clearInterval(timer); resolve(); }
+      else if(Date.now() - started > 10000){ clearInterval(timer); reject(new Error("Google Identity Services unavailable")); }
+    }, 80);
+  });
+}
+function setDriveStatus(key){
+  const el = document.getElementById("driveStatus");
+  if(el) el.textContent = t(key);
+}
+function renderDriveControls(){
+  const clientId = getDriveClientId(), connected = Boolean(driveAccessToken);
+  const input = document.getElementById("setGoogleClientId");
+  const connect = document.getElementById("btnDriveConnect");
+  const sync = document.getElementById("btnDriveSync");
+  const restore = document.getElementById("btnDriveRestore");
+  if(input && document.activeElement !== input) input.value = clientId;
+  if(connect) connect.disabled = !clientId;
+  if(sync) sync.disabled = !connected;
+  if(restore) restore.disabled = !connected;
+  if(!connected) setDriveStatus(clientId ? "driveReady" : "driveNeedClient");
+  else if(!document.getElementById("driveStatus").textContent) setDriveStatus("driveConnected");
+}
+function connectDrive(){
+  const clientId = getDriveClientId();
+  if(!clientId){ setDriveStatus("driveNeedClient"); return Promise.reject(new Error("missing client id")); }
+  return waitForGoogleIdentity().then(() => new Promise((resolve, reject) => {
+    driveTokenClientId = clientId;
+    driveTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id:clientId, scope:DRIVE_SCOPE,
+      callback:response => {
+        if(response.error){ driveAccessToken = ""; driveTokenExpiresAt = 0; renderDriveControls(); reject(new Error(response.error)); return; }
+        driveAccessToken = response.access_token;
+        driveTokenExpiresAt = Date.now() + Math.max(60, Number(response.expires_in)||3600) * 1000;
+        renderDriveControls(); resolve(response);
+      }
+    });
+    driveTokenClient.requestAccessToken({prompt:driveAccessToken ? "" : "consent"});
+  }));
+}
+async function ensureDriveAccess(){
+  if(driveAccessToken && Date.now() < driveTokenExpiresAt - 30000) return;
+  await connectDrive();
+}
+async function driveRequest(url, options={}){
+  await ensureDriveAccess();
+  const headers = Object.assign({}, options.headers || {}, {Authorization:"Bearer "+driveAccessToken});
+  const response = await fetch(url, Object.assign({}, options, {headers}));
+  if(response.status === 401){ driveAccessToken = ""; renderDriveControls(); }
+  if(!response.ok) throw new Error("Drive HTTP "+response.status);
+  if(response.status === 204) return null;
+  const type = response.headers.get("content-type") || "";
+  return type.includes("json") ? response.json() : response.text();
+}
+async function findDriveBackup(){
+  const query = encodeURIComponent("name = '"+DRIVE_FILE_NAME+"' and trashed = false");
+  const result = await driveRequest("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&pageSize=1&fields=files(id,name,modifiedTime)&q="+query);
+  return result.files && result.files[0] ? result.files[0] : null;
+}
+function drivePayload(){
+  return {app:"workpoints", version:2, exportedAt:new Date().toISOString(), settings:state.settings, entries:state.entries};
+}
+async function uploadDriveBackup(){
+  const file = await findDriveBackup();
+  const boundary = "workpoints_"+Date.now().toString(36);
+  const metadata = file ? {name:DRIVE_FILE_NAME, mimeType:"application/json"} : {name:DRIVE_FILE_NAME, mimeType:"application/json", parents:["appDataFolder"]};
+  const content = JSON.stringify(drivePayload());
+  const body = "--"+boundary+"\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n"+
+    JSON.stringify(metadata)+"\r\n--"+boundary+"\r\nContent-Type: application/json\r\n\r\n"+
+    content+"\r\n--"+boundary+"--";
+  const endpoint = file
+    ? "https://www.googleapis.com/upload/drive/v3/files/"+encodeURIComponent(file.id)+"?uploadType=multipart&fields=id,modifiedTime"
+    : "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,modifiedTime";
+  return driveRequest(endpoint, {method:file ? "PATCH" : "POST", headers:{"Content-Type":"multipart/related; boundary="+boundary}, body});
+}
+async function syncToDrive(){
+  try{
+    setDriveStatus("driveSyncing");
+    await ensureDriveAccess();
+    await uploadDriveBackup();
+    state.settings.driveLastSyncAt = new Date().toISOString(); saveSettings();
+    setDriveStatus("driveUploaded"); toast(t("driveUploaded"));
+  }catch(err){ console.warn(err); setDriveStatus("driveError"); toast(t("driveError")); }
+}
+async function restoreFromDrive(){
+  try{
+    setDriveStatus("driveSyncing");
+    await ensureDriveAccess();
+    const file = await findDriveBackup();
+    if(!file){ setDriveStatus("driveNoFile"); toast(t("driveNoFile")); return; }
+    const data = await driveRequest("https://www.googleapis.com/drive/v3/files/"+encodeURIComponent(file.id)+"?alt=media");
+    if(!data || data.app !== "workpoints" || !Array.isArray(data.entries)) throw new Error("invalid backup");
+    const valid = data.entries.filter(x => x && typeof x.orders === "number" && x.ts);
+    const clientId = getDriveClientId();
+    state.entries.splice(0, state.entries.length, ...valid);
+    state.settings = Object.assign({}, DEFAULTS, data.settings || {}, {googleClientId:clientId, demo:IS_DEMO_PAGE});
+    saveEntries(); saveSettings(); renderAll();
+    setDriveStatus("driveRestored"); toast(t("driveRestored"));
+  }catch(err){ console.warn(err); setDriveStatus("driveError"); toast(t("driveError")); }
 }
 
 /* ---------- 弹窗 / 提示 ---------- */
