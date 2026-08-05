@@ -19,7 +19,7 @@
 
 示例：http://localhost:4173/demo
 
-如有需要使用 Google Drive 同步功能请自行部署，并修改为自己的 `index.html`文件第`897`行处的Client ID，才能使用。
+自行部署的网页，如有需要使用 Google Drive 同步功能，请修改 `index.html`文件第`897`行处的Client ID为自己的，才能使用。
 
 Client ID 的申请方式请参考下方：[Google Drive 同步](https://github.com/Tadasuki/Workpoints#google-drive-%E5%90%8C%E6%AD%A5)
 
@@ -62,12 +62,13 @@ Client ID 的申请方式请参考下方：[Google Drive 同步](https://github.
 
 1. 打开「创建 Google Cloud 项目」，新建或选择一个项目。
 2. 打开「启用 Google Drive API」，确认当前项目正确后点击启用。
-3. 进入 OAuth consent screen：用户类型选择 **External**，填写应用名称、用户支持邮箱和开发者联系邮箱。
-4. 在 Scopes 页面继续下一步即可；如果应用处于 **Testing** 状态，在 Test users 中添加自己的 Google 账号。
-5. 进入 Credentials → Create credentials → OAuth client ID，Application type 选择 **Web application**。
+3. 打开配置 OAuth consent screen：进入左侧 Clients，设置应用。填写应用名称、用户支持邮箱和开发者联系邮箱，用户类型选择 **External**。在 Scopes 页面继续下一步即可。
+4. 点此左侧 Audience，如果应用处于 **Testing** 状态，在 Test users 中添加自己的 Google 账号，或者你可以直接发布应用，让应用公开。
+5. 打开创建 OAuth Client ID，Credentials → Create credentials → OAuth client ID，Application type 选择 **Web application**。
 6. 在 **Authorized JavaScript origins** 添加：`https://你的网站` 或者 `http://localhost:4173`。只填写 Origin，不要添加路径、结尾斜杠等。
 7. **Authorized redirect URIs 留空**。本网页使用 Google Identity Services Token 模式，不使用重定向回调。
-8. 保存后，网页设置中会直接显示「连接 Google Drive」，点击并完成 Google 授权即可。
+8. 得到 ID 后，替换 `index.html`文件第`897`行处的Client ID。
+9. 保存后，网页设置中点击「连接 Google Drive」，完成 Google 授权即可。
 
 如果换了域名，需要把 `https://新的域名` 也加入 Authorized JavaScript origins；
 
