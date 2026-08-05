@@ -19,9 +19,9 @@
 
 示例：http://localhost:4173/demo
 
-如有需要使用 Google Drive 同步功能请自行部署，并修改为自己的 `index.html`文件第`897`行处的Google API，才能使用。
+如有需要使用 Google Drive 同步功能请自行部署，并修改为自己的 `index.html`文件第`897`行处的Client ID，才能使用。
 
-关于 API 申请方式请参考下方：[Google Drive 同步](https://github.com/Tadasuki/Workpoints#google-drive-%E5%90%8C%E6%AD%A5)
+Client ID 的申请方式请参考下方：[Google Drive 同步](https://github.com/Tadasuki/Workpoints#google-drive-%E5%90%8C%E6%AD%A5)
 
 ## 功能一览
 
@@ -47,7 +47,9 @@
 
 ## Google Drive 同步
 
-网页已内置 Google OAuth Web Client ID，设置中不需要填写 Client ID。首次使用前，请按下面教程配置 Google Cloud。
+我所给网页已内置 Google OAuth Web Client ID，设置中不需要填写 Client ID。
+
+若您自己独立部署，请按下面教程配置 Google Cloud。
 
 ### 申请入口
 
