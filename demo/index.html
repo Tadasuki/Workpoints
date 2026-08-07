@@ -687,6 +687,88 @@ body{font-weight:600}
   .ledger-badge{display:none}
   .ledger-row{gap:9px; padding:8px 10px}
 }
+
+/* ============ 工作记录卡片：筛选 / 排序 / 翻页 ============ */
+.record-grid{align-items:stretch}
+.form-card{display:flex; flex-direction:column}
+.form-card #entryForm{display:flex; flex-direction:column; flex:1}
+.form-card .form-foot{margin-top:auto; padding-top:16px}
+.record-card{display:flex; flex-direction:column; min-height:0}
+.record-head{display:flex; align-items:flex-start; gap:14px; flex-wrap:wrap; margin-bottom:2px}
+.record-head .section-title{font-size:20px; font-weight:500; letter-spacing:0}
+.record-head .section-sub{margin-bottom:16px}
+.record-title{flex:1 1 auto; min-width:150px}
+.record-tools{margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.rec-group{display:inline-flex; align-items:center; gap:4px; padding:3px; border:1px solid var(--hairline); border-radius:10px; background:var(--surface-2)}
+.rec-tool-label{font-size:11px; font-weight:600; color:var(--ink-2); padding-left:8px; white-space:nowrap}
+.rec-date{
+  height:30px; max-width:148px; min-width:0; padding:0 8px; font-size:12px; color:var(--ink);
+  background:var(--surface); border:1px solid var(--hairline); border-radius:7px;
+  font-family:var(--font-sans); color-scheme:inherit;
+  transition:border-color .2s var(--ease-out), box-shadow .2s var(--ease-out);
+}
+.rec-date:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
+.rec-clear{
+  width:26px; height:26px; border-radius:7px; display:grid; place-items:center;
+  color:var(--muted); font-size:12px;
+  transition:background .15s var(--ease-out), color .15s var(--ease-out), transform .12s var(--ease-out);
+}
+.rec-clear[hidden]{display:none}
+.rec-clear:hover{background:color-mix(in srgb, var(--danger) 14%, transparent); color:var(--danger)}
+.rec-clear:active{transform:scale(.86)}
+.rec-select{
+  height:30px; padding:0 10px 0 9px; font-size:12px; font-weight:600; color:var(--ink);
+  background:var(--surface); border:1px solid var(--hairline); border-radius:7px; font-family:var(--font-sans);
+  cursor:pointer; transition:border-color .2s var(--ease-out), box-shadow .2s var(--ease-out);
+}
+.rec-select:hover{border-color:color-mix(in srgb, var(--accent) 36%, var(--hairline))}
+.rec-select:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
+.rec-dir{
+  width:30px; height:30px; border-radius:7px; display:grid; place-items:center;
+  font-size:14px; color:var(--ink-2); background:var(--surface); border:1px solid var(--hairline);
+  transition:transform .18s var(--ease-spring), background .2s var(--ease-out), color .2s var(--ease-out);
+}
+.rec-dir:hover{color:var(--accent); background:var(--accent-wash)}
+.rec-dir:active{transform:scale(.86)}
+.rec-dir.flip{animation:dirFlip .3s var(--ease-spring)}
+@keyframes dirFlip{50%{transform:rotate(180deg) scale(.8)}}
+.record-card .table-wrap{flex:1 1 auto; min-height:220px; overflow:auto}
+.record-card .empty-state{display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100%; gap:4px}
+.rec-empty-clear{margin-top:12px}
+.rec-table tbody tr.row-in{animation:recRowIn .34s var(--ease-out) both}
+@keyframes recRowIn{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+.record-pager{
+  display:flex; align-items:center; justify-content:flex-end; gap:6px; flex-wrap:wrap;
+  margin-top:14px; padding-top:12px; border-top:1px solid var(--line);
+}
+.record-pager[hidden]{display:none}
+.page-btn{
+  min-width:30px; height:30px; padding:0 6px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center;
+  font-size:12.5px; font-weight:600; color:var(--ink-2); background:var(--surface-2); border:1px solid var(--hairline);
+  transition:transform .12s var(--ease-out), background .2s var(--ease-out), color .2s var(--ease-out), box-shadow .2s var(--ease-out);
+}
+.page-btn:hover:not(:disabled){color:var(--accent); background:var(--surface); border-color:color-mix(in srgb, var(--accent) 30%, var(--hairline))}
+.page-btn:active:not(:disabled){transform:scale(.88)}
+.page-btn:disabled{opacity:.4; cursor:default}
+.page-nums{display:inline-flex; align-items:center; gap:4px}
+.page-num.active{background:var(--accent); border-color:var(--accent); color:#FFF9F3; box-shadow:0 3px 10px var(--accent-wash)}
+.page-num.active:hover{color:#FFF9F3; background:var(--accent-2)}
+.page-dots{color:var(--muted); font-size:12px; padding:0 2px; user-select:none}
+.page-jump{display:inline-flex; align-items:center; gap:6px; margin-left:4px; color:var(--muted); font-size:12px}
+.jump-label{font-weight:600; white-space:nowrap}
+.page-jump input{
+  width:48px; height:30px; padding:0 6px; text-align:center; font-size:12px; font-weight:600;
+  font-variant-numeric:tabular-nums; background:var(--surface-2); border:1px solid var(--hairline); border-radius:8px;
+  transition:border-color .2s var(--ease-out), box-shadow .2s var(--ease-out);
+}
+.page-jump input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
+.jump-total{font-variant-numeric:tabular-nums}
+@media (max-width:600px){
+  .rec-tool-label{display:none}
+  .rec-date{max-width:none}
+  .record-pager{gap:5px}
+  .page-jump{margin-left:0}
+}
 </style>
 </head>
 <body>
@@ -801,8 +883,8 @@ body{font-weight:600}
   </div>
 
   <!-- 记录 -->
-  <div class="grid-2" style="grid-template-columns: 400px 1fr; align-items:start">
-    <div class="card">
+  <div class="grid-2 record-grid" style="grid-template-columns: 400px 1fr">
+    <div class="card form-card">
       <h2 class="section-title" data-i18n="addTitle">记录一次工作</h2>
       <p class="section-sub" id="addSub">每单 ¥0.05 · 收入自动计算</p>
       <form id="entryForm">
@@ -821,10 +903,10 @@ body{font-weight:600}
         </div>
       </form>
     </div>
-    <div class="card">
-      <h2 class="section-title" data-i18n="tableTitle">最近记录</h2>
-      <p class="section-sub" data-i18n="tableSub">每条记录 · 一次工作时段</p>
+    <div class="card record-card">
+      <div class="record-head" id="recordHead"></div>
       <div class="table-wrap" id="tableWrap"></div>
+      <div class="record-pager" id="recordPager" hidden></div>
     </div>
   </div>
 
@@ -936,7 +1018,7 @@ const I18N = {
     addTitle:"记录一次工作", addSub:"每单 ¥0.05 · 收入自动计算",
     fDate:"日期", fStart:"开始时间（可选）", fEnd:"结束时间（可选）", fHours:"耗时（小时）", fOrders:"单数 *", fNote:"备注（可选）",
     fPreview:"预计收入", fAdd:"添加记录", errOrders:"请输入至少 1 单",
-    tableTitle:"最近记录", tableSub:"每条记录 · 一次工作时段",
+    tableTitle:"工作记录", tableSub:"每条记录 · 一次工作时段",
     thDate:"日期", thSession:"时段", thOrders:"单数", thTime:"耗时", thEarn:"收入", thNote:"备注", thOp:"",
     empty:"还没有记录。添加一笔工作，开始积累。",
     toastAdded:"已添加记录", toastDeleted:"已删除记录", toastUndo:"撤销",
@@ -961,7 +1043,10 @@ const I18N = {
     ledgerNameLabel:"账本名称", ledgerNameErr:"请输入账本名称",
     ledgerModalAdd:"新建账本", ledgerModalEdit:"重命名账本", save:"保存",
     delLedgerTitle:"删除账本？", delLedgerMsg:"将删除「{name}」及其 {n} 条记录，此操作不可恢复。",
-    thLedger:"账本", ledgerDragHint:"拖动调整宽度"
+    thLedger:"账本", ledgerDragHint:"拖动调整宽度",
+    recFilter:"筛选", recFilterDate:"按日期筛选", recClear:"清除筛选",
+    recSort:"排序", recSortDate:"日期", recSortEarn:"收入", recSortDur:"耗时", recSortAsc:"升序", recSortDesc:"降序",
+    recPrev:"上一页", recNext:"下一页", recPage:"第 {n} 页", recJump:"页码", recNoMatch:"该日期没有工作记录"
   },
   en: {
     brand:"WorkPoints", brandSub:"兼职收入 · Part-time Income", tagline:"Part-time income · visualized",
@@ -983,7 +1068,7 @@ const I18N = {
     addTitle:"Log a session", addSub:"¥0.05 / order · earnings auto-calculated",
     fDate:"Date", fStart:"Start time (optional)", fEnd:"End time (optional)", fHours:"Duration (hours)", fOrders:"Orders *", fNote:"Note (optional)",
     fPreview:"Estimated", fAdd:"Add entry", errOrders:"Enter at least 1 order",
-    tableTitle:"Recent entries", tableSub:"One entry per work session",
+    tableTitle:"Work records", tableSub:"One entry per work session",
     thDate:"Date", thSession:"Session", thOrders:"Orders", thTime:"Time", thEarn:"Earned", thNote:"Note", thOp:"",
     empty:"No entries yet. Add your first work session to get started.",
     toastAdded:"Entry added", toastDeleted:"Entry deleted", toastUndo:"Undo",
@@ -1008,7 +1093,10 @@ const I18N = {
     ledgerNameLabel:"Ledger name", ledgerNameErr:"Enter a ledger name",
     ledgerModalAdd:"New ledger", ledgerModalEdit:"Rename ledger", save:"Save",
     delLedgerTitle:"Delete this ledger?", delLedgerMsg:"This will delete “{name}” and its {n} entries. This cannot be undone.",
-    thLedger:"Ledger", ledgerDragHint:"Drag to resize"
+    thLedger:"Ledger", ledgerDragHint:"Drag to resize",
+    recFilter:"Filter", recFilterDate:"Filter by date", recClear:"Clear filter",
+    recSort:"Sort", recSortDate:"Date", recSortEarn:"Earned", recSortDur:"Time", recSortAsc:"Ascending", recSortDesc:"Descending",
+    recPrev:"Previous", recNext:"Next", recPage:"Page {n}", recJump:"Page", recNoMatch:"No work records on this date"
   }
 };
 
@@ -1871,17 +1959,140 @@ function spanLabel(){
   return isZH() ? "近"+r+"日" : "last "+r+" days";
 }
 
+/* 工作记录：筛选、排序、分页 */
+const TABLE_PAGE_SIZE = 8;
+const tableState = { page: 1, sort: "ts", dir: -1, date: "" };
+let tableAnimKey = null, lastSortDir = null;
+
+function filteredEntries(){
+  let list = viewEntries();
+  if(tableState.date){
+    const key = tableState.date;
+    list = list.filter(e => (e.date || dateKey(new Date(e.ts).getTime())) === key);
+  }
+  const field = tableState.sort, dir = tableState.dir;
+  list.sort((a, b) => {
+    let va, vb;
+    if(field === "earn"){ va = a.orders * entryRate(a); vb = b.orders * entryRate(b); }
+    else if(field === "dur"){ va = entryMinutes(a); vb = entryMinutes(b); }
+    else { va = a.ts; vb = b.ts; }
+    if(va < vb) return -dir;
+    if(va > vb) return dir;
+    return a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0;
+  });
+  return list;
+}
+
+function renderRecordTools(){
+  const head = document.getElementById("recordHead");
+  head.innerHTML =
+    '<div class="record-title">' +
+      '<h2 class="section-title">'+esc(t("tableTitle"))+'</h2>' +
+      '<p class="section-sub">'+esc(t("tableSub"))+'</p>' +
+    '</div>' +
+    '<div class="record-tools">' +
+      '<div class="rec-group">' +
+        '<label class="rec-tool-label" for="recDateFilter">'+esc(t("recFilter"))+'</label>' +
+        '<input type="date" id="recDateFilter" class="rec-date" value="'+esc(tableState.date)+'" aria-label="'+esc(t("recFilterDate"))+'">' +
+        '<button type="button" class="rec-clear" id="recDateClear" title="'+esc(t("recClear"))+'" aria-label="'+esc(t("recClear"))+'"'+(tableState.date ? "" : " hidden")+'>✕</button>' +
+      '</div>' +
+      '<div class="rec-group">' +
+        '<label class="rec-tool-label" for="recSortField">'+esc(t("recSort"))+'</label>' +
+        '<select id="recSortField" class="rec-select" aria-label="'+esc(t("recSort"))+'">' +
+          '<option value="ts"'+(tableState.sort==="ts"?' selected':'')+'>'+esc(t("recSortDate"))+'</option>' +
+          '<option value="earn"'+(tableState.sort==="earn"?' selected':'')+'>'+esc(t("recSortEarn"))+'</option>' +
+          '<option value="dur"'+(tableState.sort==="dur"?' selected':'')+'>'+esc(t("recSortDur"))+'</option>' +
+        '</select>' +
+        '<button type="button" id="recSortDir" class="rec-dir" title="'+esc(tableState.dir < 0 ? t("recSortDesc") : t("recSortAsc"))+'" aria-label="'+esc(tableState.dir < 0 ? t("recSortDesc") : t("recSortAsc"))+'">'+(tableState.dir < 0 ? "↓" : "↑")+'</button>' +
+      '</div>' +
+    '</div>';
+  const dirBtn = document.getElementById("recSortDir");
+  if(lastSortDir != null && lastSortDir !== tableState.dir) dirBtn.classList.add("flip");
+  lastSortDir = tableState.dir;
+  document.getElementById("recDateFilter").addEventListener("change", e => {
+    tableState.date = e.target.value;
+    tableState.page = 1;
+    renderAll();
+  });
+  document.getElementById("recDateClear").addEventListener("click", () => {
+    tableState.date = "";
+    tableState.page = 1;
+    renderAll();
+  });
+  document.getElementById("recSortField").addEventListener("change", e => {
+    tableState.sort = e.target.value;
+    tableState.page = 1;
+    renderAll();
+  });
+  dirBtn.addEventListener("click", () => {
+    tableState.dir = -tableState.dir;
+    tableState.page = 1;
+    renderAll();
+  });
+}
+
+function renderPager(total, page){
+  const el = document.getElementById("recordPager");
+  if(total <= 0){ el.innerHTML = ""; el.hidden = true; return; }
+  el.hidden = false;
+  const pages = total;
+  const win = [];
+  if(pages === 1){ win.push(1); }
+  else{
+    win.push(1);
+    if(page > 3) win.push("…");
+    for(let i = Math.max(2, page-1); i <= Math.min(pages-1, page+1); i++) win.push(i);
+    if(page < pages-2) win.push("…");
+    if(pages > 1) win.push(pages);
+  }
+  let html = '<button type="button" class="page-btn" id="pgPrev" aria-label="'+esc(t("recPrev"))+'"'+(page<=1?' disabled':'')+'>‹</button>' +
+    '<div class="page-nums">';
+  win.forEach(n => {
+    if(n === "…") html += '<span class="page-dots">…</span>';
+    else html += '<button type="button" class="page-btn page-num'+(n===page?' active':'')+'" data-pg="'+n+'" aria-label="'+esc(tf("recPage",{n}))+'"'+(n===page?' aria-current="page"':'')+'>'+n+'</button>';
+  });
+  html += '</div>' +
+    '<button type="button" class="page-btn" id="pgNext" aria-label="'+esc(t("recNext"))+'"'+(page>=pages?' disabled':'')+'>›</button>' +
+    '<div class="page-jump"><label class="jump-label" for="pgJump">'+esc(t("recJump"))+'</label>' +
+    '<input type="number" id="pgJump" min="1" max="'+pages+'" value="'+page+'" aria-label="'+esc(t("recJump"))+'">' +
+    '<span class="jump-total">/ '+pages+'</span></div>';
+  el.innerHTML = html;
+  const go = p => {
+    p = Math.max(1, Math.min(pages, Math.round(p) || 1));
+    if(p !== tableState.page){ tableState.page = p; renderAll(); }
+  };
+  document.getElementById("pgPrev").addEventListener("click", () => go(tableState.page - 1));
+  document.getElementById("pgNext").addEventListener("click", () => go(tableState.page + 1));
+  el.querySelectorAll(".page-num").forEach(b => b.addEventListener("click", () => go(Number(b.dataset.pg))));
+  const jump = document.getElementById("pgJump");
+  const applyJump = () => { const v = parseInt(jump.value, 10); if(!isNaN(v)) go(v); };
+  jump.addEventListener("change", applyJump);
+  jump.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); applyJump(); } });
+  jump.addEventListener("blur", applyJump);
+}
+
 function renderTable(){
   const wrap = document.getElementById("tableWrap");
-  const list = viewEntries().slice().sort((a,b) => b.ts.localeCompare(a.ts)).slice(0, 30);
-  if(!list.length){
-    wrap.innerHTML = '<div class="empty-state"><div class="empty-ic">📝</div>'+esc(t("empty"))+'</div>';
+  const all = filteredEntries();
+  const total = all.length;
+  const pages = Math.max(1, Math.ceil(total / TABLE_PAGE_SIZE));
+  if(tableState.page > pages) tableState.page = pages;
+  const page = tableState.page;
+  if(!total){
+    const filtered = Boolean(tableState.date);
+    wrap.innerHTML = filtered
+      ? '<div class="empty-state"><div class="empty-ic">🗓</div>'+esc(t("recNoMatch"))+'<button type="button" class="btn btn-ghost rec-empty-clear" id="recEmptyClear">'+esc(t("recClear"))+'</button></div>'
+      : '<div class="empty-state"><div class="empty-ic">📝</div>'+esc(t("empty"))+'</div>';
+    const clearBtn = document.getElementById("recEmptyClear");
+    if(clearBtn) clearBtn.addEventListener("click", () => { tableState.date = ""; tableState.page = 1; renderAll(); });
+    renderPager(0, 1);
     return;
   }
+  const list = all.slice((page-1)*TABLE_PAGE_SIZE, page*TABLE_PAGE_SIZE);
   const zh = isZH();
   const merged = state.viewIds.length > 1;
   const ledgerName = id => { const l = ledgerById(id); return l ? l.name : ""; };
-  const head = '<table><thead><tr>'+
+  const head = '<table class="rec-table"><thead><tr>'+
     (merged ? '<th>'+esc(t("thLedger"))+'</th>' : "") +
     ["thDate","thSession","thOrders","thTime","thEarn","thNote","thOp"].map(k => '<th>'+esc(t(k))+'</th>').join("") +
     '</tr></thead><tbody>';
@@ -1902,6 +2113,17 @@ function renderTable(){
   }).join("");
   wrap.innerHTML = head + rows + "</tbody></table>";
   wrap.querySelectorAll(".del-btn").forEach(btn => btn.addEventListener("click", () => delEntry(btn.dataset.id)));
+  // 翻页 / 筛选 / 排序 / 数据变化时，行做轻量入场动画
+  const key = page + ":" + total + ":" + tableState.sort + ":" + tableState.dir + ":" + tableState.date;
+  const animate = key !== tableAnimKey;
+  tableAnimKey = key;
+  if(animate){
+    wrap.querySelectorAll("tbody tr").forEach((tr, i) => {
+      tr.classList.add("row-in");
+      tr.style.animationDelay = (i*28) + "ms";
+    });
+  }
+  renderPager(pages, page);
 }
 
 function delEntry(id){
@@ -2488,6 +2710,7 @@ function renderAll(){
   renderHero();
   renderKpis();
   renderCharts();
+  renderRecordTools();
   renderTable();
   renderFormLedger();
 }
