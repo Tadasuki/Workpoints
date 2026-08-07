@@ -611,7 +611,7 @@ body{font-weight:600}
   #rangeSeg::before,.range-popover,.heatmap-cell{transition:none!important}
 }
 @media (prefers-reduced-transparency: reduce){
-  .card,.kpi,.popover,.modal,.toast{background:var(--surface); -webkit-backdrop-filter:none; backdrop-filter:none}
+  .card,.kpi,.popover,.modal,.toast,.rec-pop{background:var(--surface); -webkit-backdrop-filter:none; backdrop-filter:none}
 }
 
 /* ============ 账本（多账本） ============ */
@@ -695,43 +695,46 @@ body{font-weight:600}
 .form-card .form-foot{margin-top:auto; padding-top:16px}
 .record-card{display:flex; flex-direction:column; min-height:0}
 .record-head{display:flex; align-items:flex-start; gap:14px; flex-wrap:wrap; margin-bottom:2px}
-.record-head .section-title{font-size:20px; font-weight:500; letter-spacing:0}
 .record-head .section-sub{margin-bottom:16px}
 .record-title{flex:1 1 auto; min-width:150px}
 .record-tools{margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
-.rec-group{display:inline-flex; align-items:center; gap:4px; padding:3px; border:1px solid var(--hairline); border-radius:10px; background:var(--surface-2)}
-.rec-tool-label{font-size:11px; font-weight:600; color:var(--ink-2); padding-left:8px; white-space:nowrap}
-.rec-date{
-  height:30px; max-width:148px; min-width:0; padding:0 8px; font-size:12px; color:var(--ink);
-  background:var(--surface); border:1px solid var(--hairline); border-radius:7px;
-  font-family:var(--font-sans); color-scheme:inherit;
-  transition:border-color .2s var(--ease-out), box-shadow .2s var(--ease-out);
+.rec-wrap{position:relative; z-index:5}
+.rec-chip{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:7px 13px; border-radius:999px; font-size:12px; font-weight:600;
+  color:var(--ink-2); background:rgba(126,112,94,.08); border:1px solid var(--hairline);
+  transition:color .2s var(--ease-out), background .2s var(--ease-out), border-color .2s var(--ease-out), transform .12s var(--ease-out);
+  user-select:none; white-space:nowrap;
 }
-.rec-date:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
-.rec-clear{
-  width:26px; height:26px; border-radius:7px; display:grid; place-items:center;
-  color:var(--muted); font-size:12px;
-  transition:background .15s var(--ease-out), color .15s var(--ease-out), transform .12s var(--ease-out);
+.rec-chip svg{width:13px; height:13px; flex:none; opacity:.85}
+.rec-chip:hover{color:var(--ink); background:var(--surface); border-color:color-mix(in srgb, var(--accent) 30%, var(--hairline))}
+.rec-chip:active{transform:scale(.94)}
+.rec-chip[aria-expanded="true"]{color:var(--accent); border-color:color-mix(in srgb, var(--accent) 34%, var(--hairline)); background:var(--accent-wash)}
+.rec-chip.active{color:var(--accent); background:var(--accent-wash); border-color:color-mix(in srgb, var(--accent) 22%, var(--hairline))}
+.rec-chip.active svg{opacity:1}
+.rec-pop{
+  position:absolute; top:calc(100% + 9px); right:0; z-index:8;
+  width:min(302px, calc(100vw - 48px)); padding:18px;
+  background:var(--surface); -webkit-backdrop-filter:blur(24px) saturate(140%); backdrop-filter:blur(24px) saturate(140%);
+  border:1px solid var(--hairline); border-radius:15px; box-shadow:var(--shadow-lg);
+  transform-origin:top right;
+  opacity:0; transform:scale(.94) translateY(-6px); pointer-events:none;
+  transition:opacity .2s var(--ease-out), transform .3s var(--ease-spring);
 }
-.rec-clear[hidden]{display:none}
-.rec-clear:hover{background:color-mix(in srgb, var(--danger) 14%, transparent); color:var(--danger)}
-.rec-clear:active{transform:scale(.86)}
-.rec-select{
-  height:30px; padding:0 10px 0 9px; font-size:12px; font-weight:600; color:var(--ink);
-  background:var(--surface); border:1px solid var(--hairline); border-radius:7px; font-family:var(--font-sans);
-  cursor:pointer; transition:border-color .2s var(--ease-out), box-shadow .2s var(--ease-out);
-}
-.rec-select:hover{border-color:color-mix(in srgb, var(--accent) 36%, var(--hairline))}
-.rec-select:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
-.rec-dir{
-  width:30px; height:30px; border-radius:7px; display:grid; place-items:center;
-  font-size:14px; color:var(--ink-2); background:var(--surface); border:1px solid var(--hairline);
-  transition:transform .18s var(--ease-spring), background .2s var(--ease-out), color .2s var(--ease-out);
-}
-.rec-dir:hover{color:var(--accent); background:var(--accent-wash)}
-.rec-dir:active{transform:scale(.86)}
-.rec-dir.flip{animation:dirFlip .3s var(--ease-spring)}
-@keyframes dirFlip{50%{transform:rotate(180deg) scale(.8)}}
+.rec-pop.open{opacity:1; transform:none; pointer-events:auto}
+.rec-pop h3{font-family:var(--font-display); font-size:17px; font-weight:500; letter-spacing:0; margin-bottom:4px}
+.rec-pop .sub{font-size:11.5px; color:var(--muted); margin-bottom:14px}
+.rec-pop-fields{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.rec-pop-fields .field{gap:6px}
+.rec-pop-fields input{width:100%; height:38px; padding:0 9px; font-size:12px}
+.rec-pop-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line)}
+.rec-sort-pop{width:min(228px, calc(100vw - 48px))}
+.rec-sort-pop h3{margin-bottom:12px}
+.rec-sort-seg{display:flex; padding:3px; gap:2px; background:var(--surface-2); border:1px solid var(--hairline); border-radius:11px}
+.rec-sort-seg .seg-opt{flex:1; min-width:0; padding:7px 6px; font-size:12px; font-weight:600; color:var(--ink-2); text-align:center; border-radius:8px; transition:background .2s var(--ease-out), color .2s var(--ease-out), transform .12s var(--ease-out)}
+.rec-sort-seg .seg-opt:active{transform:scale(.94)}
+.rec-sort-seg .seg-opt.active{background:var(--surface); color:var(--ink); box-shadow:0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px var(--hairline)}
+.rec-sort-seg + .rec-sort-seg{margin-top:8px}
 .record-card .table-wrap{flex:1 1 auto; min-height:220px; overflow:auto}
 .record-card .empty-state{display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100%; gap:4px}
 .rec-empty-clear{margin-top:12px}
@@ -764,8 +767,9 @@ body{font-weight:600}
 .page-jump input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
 .jump-total{font-variant-numeric:tabular-nums}
 @media (max-width:600px){
-  .rec-tool-label{display:none}
-  .rec-date{max-width:none}
+  .rec-pop{position:fixed; top:auto; right:14px; bottom:calc(20px + env(safe-area-inset-bottom)); left:14px; width:auto; transform-origin:bottom center}
+  .rec-pop.open{transform:none}
+  .rec-pop-fields{grid-template-columns:1fr}
   .record-pager{gap:5px}
   .page-jump{margin-left:0}
 }
@@ -1027,7 +1031,7 @@ const I18N = {
     undoRestored:"已恢复", confirmDel:"删除这条记录？",
     settingsTitle:"设置", settingsSub:"汇率、结算日、Google Drive 与数据管理",
     rateLabel:"每单收入（元）", usdLabel:"汇率 · 1 USD = ? CNY", settleDayLabel:"每月结算日（1–28日）",
-    driveConnect:"连接 Google Drive", driveSync:"同步到 Drive", driveRestore:"从 Drive 恢复", driveNeedClient:"Google Drive 尚未配置", driveReady:"点击连接 Google Drive", driveConnected:"Google Drive 已连接", driveSyncing:"正在同步…", driveUploaded:"已同步到 Google Drive", driveRestored:"已从 Google Drive 恢复", driveNoFile:"Drive 中还没有 WorkPoints 备份", driveError:"Google Drive 同步失败", driveNote:"使用内置 Google OAuth Client ID，数据保存在 Drive 私有应用空间",
+    driveConnect:"连接 Google Drive", driveSync:"同步到 Drive", driveRestore:"从 Drive 恢复", driveNeedClient:"Google Drive 尚未配置", driveReady:"点击连接 Google Drive", driveConnected:"Google Drive 已连接", driveSyncing:"正在同步…", driveUploaded:"已同步到 Google Drive", driveRestored:"已从 Google Drive 恢复", driveNoFile:"Drive 中还没有 WorkPoints 备份", driveError:"Google Drive 同步失败", driveLogout:"登出 Google Drive", driveLoggedOut:"已登出 Google Drive", driveNote:"使用内置 Google OAuth Client ID，数据保存在 Drive 私有应用空间",
     exportBtn:"导出数据", importBtn:"导入数据", clearBtn:"清空数据", setNote:"导入将替换当前记录 · 建议先导出备份",
     clearTitle:"清空全部数据？", clearMsg:"此操作不可恢复，确定要删除所有记录吗？建议先导出备份。",
     cancel:"取消", confirm:"确认",
@@ -1044,9 +1048,10 @@ const I18N = {
     ledgerModalAdd:"新建账本", ledgerModalEdit:"重命名账本", save:"保存",
     delLedgerTitle:"删除账本？", delLedgerMsg:"将删除「{name}」及其 {n} 条记录，此操作不可恢复。",
     thLedger:"账本", ledgerDragHint:"拖动调整宽度",
-    recFilter:"筛选", recFilterDate:"按日期筛选", recClear:"清除筛选",
-    recSort:"排序", recSortDate:"日期", recSortEarn:"收入", recSortDur:"耗时", recSortAsc:"升序", recSortDesc:"降序",
-    recPrev:"上一页", recNext:"下一页", recPage:"第 {n} 页", recJump:"页码", recNoMatch:"该日期没有工作记录"
+    recFilter:"筛选", recClear:"清除筛选",
+    recFilterTitle:"按日期筛选", recFilterSub:"只看这段时间的工作记录", recFilterSince:"自 {d} 起", recFilterUntil:"至 {d} 止",
+    recSort:"排序", recSortTitle:"排序方式", recSortDate:"日期", recSortEarn:"收入", recSortDur:"耗时", recSortAsc:"升序", recSortDesc:"降序",
+    recPrev:"上一页", recNext:"下一页", recPage:"第 {n} 页", recJump:"页码", recNoMatch:"没有符合条件的工作记录"
   },
   en: {
     brand:"WorkPoints", brandSub:"兼职收入 · Part-time Income", tagline:"Part-time income · visualized",
@@ -1077,7 +1082,7 @@ const I18N = {
     undoRestored:"Restored", confirmDel:"Delete this entry?",
     settingsTitle:"Settings", settingsSub:"Exchange · settlement day · Google Drive · data",
     rateLabel:"Rate per order (CNY)", usdLabel:"Exchange · 1 USD = ? CNY", settleDayLabel:"Monthly settlement day (1–28)",
-    driveConnect:"Connect Google Drive", driveSync:"Sync to Drive", driveRestore:"Restore from Drive", driveNeedClient:"Google Drive is not configured", driveReady:"Connect Google Drive to begin", driveConnected:"Google Drive connected", driveSyncing:"Syncing…", driveUploaded:"Synced to Google Drive", driveRestored:"Restored from Google Drive", driveNoFile:"No WorkPoints backup found in Drive", driveError:"Google Drive sync failed", driveNote:"Uses the built-in Google OAuth Client ID; data stays in Drive's private app space",
+    driveConnect:"Connect Google Drive", driveSync:"Sync to Drive", driveRestore:"Restore from Drive", driveNeedClient:"Google Drive is not configured", driveReady:"Connect Google Drive to begin", driveConnected:"Google Drive connected", driveSyncing:"Syncing…", driveUploaded:"Synced to Google Drive", driveRestored:"Restored from Google Drive", driveNoFile:"No WorkPoints backup found in Drive", driveError:"Google Drive sync failed", driveLogout:"Sign out of Google Drive", driveLoggedOut:"Signed out of Google Drive", driveNote:"Uses the built-in Google OAuth Client ID; data stays in Drive's private app space",
     exportBtn:"Export", importBtn:"Import", clearBtn:"Clear all", setNote:"Import replaces current records — export a backup first.",
     clearTitle:"Clear all data?", clearMsg:"This cannot be undone. Export a backup first.",
     cancel:"Cancel", confirm:"Confirm",
@@ -1094,9 +1099,10 @@ const I18N = {
     ledgerModalAdd:"New ledger", ledgerModalEdit:"Rename ledger", save:"Save",
     delLedgerTitle:"Delete this ledger?", delLedgerMsg:"This will delete “{name}” and its {n} entries. This cannot be undone.",
     thLedger:"Ledger", ledgerDragHint:"Drag to resize",
-    recFilter:"Filter", recFilterDate:"Filter by date", recClear:"Clear filter",
-    recSort:"Sort", recSortDate:"Date", recSortEarn:"Earned", recSortDur:"Time", recSortAsc:"Ascending", recSortDesc:"Descending",
-    recPrev:"Previous", recNext:"Next", recPage:"Page {n}", recJump:"Page", recNoMatch:"No work records on this date"
+    recFilter:"Filter", recClear:"Clear filter",
+    recFilterTitle:"Filter by date", recFilterSub:"Only show work from this time range", recFilterSince:"From {d}", recFilterUntil:"Through {d}",
+    recSort:"Sort", recSortTitle:"Sort by", recSortDate:"Date", recSortEarn:"Earned", recSortDur:"Time", recSortAsc:"Ascending", recSortDesc:"Descending",
+    recPrev:"Previous", recNext:"Next", recPage:"Page {n}", recJump:"Page", recNoMatch:"No matching work records"
   }
 };
 
@@ -1961,14 +1967,19 @@ function spanLabel(){
 
 /* 工作记录：筛选、排序、分页 */
 const TABLE_PAGE_SIZE = 8;
-const tableState = { page: 1, sort: "ts", dir: -1, date: "" };
-let tableAnimKey = null, lastSortDir = null;
+const tableState = { page: 1, sort: "ts", dir: -1, filter: { from: "", to: "" } };
+let tableAnimKey = null, recPopToOpen = null;
 
 function filteredEntries(){
   let list = viewEntries();
-  if(tableState.date){
-    const key = tableState.date;
-    list = list.filter(e => (e.date || dateKey(new Date(e.ts).getTime())) === key);
+  const f = tableState.filter;
+  if(f.from || f.to){
+    list = list.filter(e => {
+      const key = e.date || dateKey(new Date(e.ts).getTime());
+      if(f.from && key < f.from) return false;
+      if(f.to && key > f.to) return false;
+      return true;
+    });
   }
   const field = tableState.sort, dir = tableState.dir;
   list.sort((a, b) => {
@@ -1983,6 +1994,45 @@ function filteredEntries(){
   return list;
 }
 
+function recFilterActive(){ const f = tableState.filter; return Boolean(f.from || f.to); }
+function recDateLabel(key){ return fmtDate(new Date(key + "T00:00:00")); }
+function recFilterLabel(){
+  const f = tableState.filter;
+  if(f.from && f.to) return recDateLabel(f.from) + " – " + recDateLabel(f.to);
+  if(f.from) return tf("recFilterSince", {d: recDateLabel(f.from)});
+  if(f.to) return tf("recFilterUntil", {d: recDateLabel(f.to)});
+  return t("recFilter");
+}
+function recSortLabel(){
+  const field = tableState.sort === "earn" ? t("recSortEarn") : tableState.sort === "dur" ? t("recSortDur") : t("recSortDate");
+  return field + (tableState.dir < 0 ? " ↓" : " ↑");
+}
+function recFilterIcon(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16M7 12h10M10 19h4"/></svg>';
+}
+function recSortIcon(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>';
+}
+function recSegOpt(field, label){
+  return '<button type="button" class="seg-opt'+(tableState.sort===field?' active':'')+'" data-field="'+field+'">'+esc(label)+'</button>';
+}
+function recSegDirOpt(dir, label){
+  return '<button type="button" class="seg-opt'+(tableState.dir===dir?' active':'')+'" data-dir="'+dir+'">'+esc(label)+'</button>';
+}
+function recPopEl(name){ return document.getElementById(name === "filter" ? "recFilterPop" : "recSortPop"); }
+function recChipEl(name){ return document.getElementById(name === "filter" ? "recFilterChip" : "recSortChip"); }
+function openRecPop(name){
+  ["filter","sort"].forEach(n => {
+    const pop = recPopEl(n), chip = recChipEl(n);
+    if(!pop || !chip) return;
+    const on = n === name;
+    pop.classList.toggle("open", on);
+    pop.setAttribute("aria-hidden", on ? "false" : "true");
+    chip.setAttribute("aria-expanded", on ? "true" : "false");
+    chip.classList.toggle("active", on);
+  });
+}
+
 function renderRecordTools(){
   const head = document.getElementById("recordHead");
   head.innerHTML =
@@ -1991,44 +2041,93 @@ function renderRecordTools(){
       '<p class="section-sub">'+esc(t("tableSub"))+'</p>' +
     '</div>' +
     '<div class="record-tools">' +
-      '<div class="rec-group">' +
-        '<label class="rec-tool-label" for="recDateFilter">'+esc(t("recFilter"))+'</label>' +
-        '<input type="date" id="recDateFilter" class="rec-date" value="'+esc(tableState.date)+'" aria-label="'+esc(t("recFilterDate"))+'">' +
-        '<button type="button" class="rec-clear" id="recDateClear" title="'+esc(t("recClear"))+'" aria-label="'+esc(t("recClear"))+'"'+(tableState.date ? "" : " hidden")+'>✕</button>' +
+      '<div class="rec-wrap">' +
+        '<button type="button" class="rec-chip'+(recFilterActive()?' active':'')+'" id="recFilterChip" aria-expanded="false" aria-haspopup="true" aria-label="'+esc(t("recFilter"))+'">' +
+          recFilterIcon() + '<span id="recFilterLabel">'+esc(recFilterLabel())+'</span>' +
+        '</button>' +
+        '<div class="rec-pop" id="recFilterPop" role="dialog" aria-hidden="true">' +
+          '<h3>'+esc(t("recFilterTitle"))+'</h3>' +
+          '<p class="sub">'+esc(t("recFilterSub"))+'</p>' +
+          '<div class="rec-pop-fields">' +
+            '<div class="field"><label>'+esc(t("customFrom"))+'</label><input type="date" id="recFrom" value="'+esc(tableState.filter.from)+'"></div>' +
+            '<div class="field"><label>'+esc(t("customTo"))+'</label><input type="date" id="recTo" value="'+esc(tableState.filter.to)+'"></div>' +
+          '</div>' +
+          '<div class="rec-pop-actions">' +
+            '<button type="button" class="btn btn-ghost" id="recFilterClear">'+esc(t("recClear"))+'</button>' +
+            '<button type="button" class="btn btn-primary" id="recFilterApply">'+esc(t("customApply"))+'</button>' +
+          '</div>' +
+        '</div>' +
       '</div>' +
-      '<div class="rec-group">' +
-        '<label class="rec-tool-label" for="recSortField">'+esc(t("recSort"))+'</label>' +
-        '<select id="recSortField" class="rec-select" aria-label="'+esc(t("recSort"))+'">' +
-          '<option value="ts"'+(tableState.sort==="ts"?' selected':'')+'>'+esc(t("recSortDate"))+'</option>' +
-          '<option value="earn"'+(tableState.sort==="earn"?' selected':'')+'>'+esc(t("recSortEarn"))+'</option>' +
-          '<option value="dur"'+(tableState.sort==="dur"?' selected':'')+'>'+esc(t("recSortDur"))+'</option>' +
-        '</select>' +
-        '<button type="button" id="recSortDir" class="rec-dir" title="'+esc(tableState.dir < 0 ? t("recSortDesc") : t("recSortAsc"))+'" aria-label="'+esc(tableState.dir < 0 ? t("recSortDesc") : t("recSortAsc"))+'">'+(tableState.dir < 0 ? "↓" : "↑")+'</button>' +
+      '<div class="rec-wrap">' +
+        '<button type="button" class="rec-chip" id="recSortChip" aria-expanded="false" aria-haspopup="true" aria-label="'+esc(t("recSort"))+'">' +
+          recSortIcon() + '<span id="recSortLabel">'+esc(recSortLabel())+'</span>' +
+        '</button>' +
+        '<div class="rec-pop rec-sort-pop" id="recSortPop" role="dialog" aria-hidden="true">' +
+          '<h3>'+esc(t("recSortTitle"))+'</h3>' +
+          '<div class="rec-sort-seg" id="recSortFieldSeg">' +
+            recSegOpt("ts", t("recSortDate")) + recSegOpt("earn", t("recSortEarn")) + recSegOpt("dur", t("recSortDur")) +
+          '</div>' +
+          '<div class="rec-sort-seg" id="recSortDirSeg">' +
+            recSegDirOpt(-1, t("recSortDesc")) + recSegDirOpt(1, t("recSortAsc")) +
+          '</div>' +
+        '</div>' +
       '</div>' +
     '</div>';
-  const dirBtn = document.getElementById("recSortDir");
-  if(lastSortDir != null && lastSortDir !== tableState.dir) dirBtn.classList.add("flip");
-  lastSortDir = tableState.dir;
-  document.getElementById("recDateFilter").addEventListener("change", e => {
-    tableState.date = e.target.value;
+  const filterPop = document.getElementById("recFilterPop");
+  const sortPop = document.getElementById("recSortPop");
+  filterPop.addEventListener("click", e => e.stopPropagation());
+  sortPop.addEventListener("click", e => e.stopPropagation());
+  document.getElementById("recFilterChip").addEventListener("click", e => {
+    e.stopPropagation();
+    openRecPop(filterPop.classList.contains("open") ? null : "filter");
+  });
+  document.getElementById("recSortChip").addEventListener("click", e => {
+    e.stopPropagation();
+    openRecPop(sortPop.classList.contains("open") ? null : "sort");
+  });
+  document.getElementById("recFilterApply").addEventListener("click", () => {
+    tableState.filter = { from: document.getElementById("recFrom").value, to: document.getElementById("recTo").value };
     tableState.page = 1;
+    openRecPop(null);
     renderAll();
   });
-  document.getElementById("recDateClear").addEventListener("click", () => {
-    tableState.date = "";
+  document.getElementById("recFilterClear").addEventListener("click", () => {
+    tableState.filter = { from: "", to: "" };
+    document.getElementById("recFrom").value = "";
+    document.getElementById("recTo").value = "";
     tableState.page = 1;
+    openRecPop(null);
     renderAll();
   });
-  document.getElementById("recSortField").addEventListener("change", e => {
-    tableState.sort = e.target.value;
-    tableState.page = 1;
-    renderAll();
+  filterPop.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("keydown", e => {
+      if(e.key === "Enter"){ e.preventDefault(); document.getElementById("recFilterApply").click(); }
+      else if(e.key === "Escape"){ e.preventDefault(); openRecPop(null); }
+    });
   });
-  dirBtn.addEventListener("click", () => {
-    tableState.dir = -tableState.dir;
+  sortPop.querySelectorAll("[data-field]").forEach(btn => btn.addEventListener("click", () => {
+    tableState.sort = btn.dataset.field;
     tableState.page = 1;
+    recPopToOpen = "sort";
     renderAll();
-  });
+  }));
+  sortPop.querySelectorAll("[data-dir]").forEach(btn => btn.addEventListener("click", () => {
+    tableState.dir = Number(btn.dataset.dir);
+    tableState.page = 1;
+    recPopToOpen = "sort";
+    renderAll();
+  }));
+  if(recPopToOpen){ openRecPop(recPopToOpen); recPopToOpen = null; }
+  if(!window.__recPopGlobal){
+    window.__recPopGlobal = true;
+    document.addEventListener("click", e => {
+      if(e.target.closest(".rec-wrap")) return;
+      openRecPop(null);
+    });
+    document.addEventListener("keydown", e => {
+      if(e.key === "Escape") openRecPop(null);
+    });
+  }
 }
 
 function renderPager(total, page){
@@ -2079,12 +2178,12 @@ function renderTable(){
   if(tableState.page > pages) tableState.page = pages;
   const page = tableState.page;
   if(!total){
-    const filtered = Boolean(tableState.date);
+    const filtered = recFilterActive();
     wrap.innerHTML = filtered
       ? '<div class="empty-state"><div class="empty-ic">🗓</div>'+esc(t("recNoMatch"))+'<button type="button" class="btn btn-ghost rec-empty-clear" id="recEmptyClear">'+esc(t("recClear"))+'</button></div>'
       : '<div class="empty-state"><div class="empty-ic">📝</div>'+esc(t("empty"))+'</div>';
     const clearBtn = document.getElementById("recEmptyClear");
-    if(clearBtn) clearBtn.addEventListener("click", () => { tableState.date = ""; tableState.page = 1; renderAll(); });
+    if(clearBtn) clearBtn.addEventListener("click", () => { tableState.filter = { from: "", to: "" }; tableState.page = 1; renderAll(); });
     renderPager(0, 1);
     return;
   }
@@ -2114,7 +2213,7 @@ function renderTable(){
   wrap.innerHTML = head + rows + "</tbody></table>";
   wrap.querySelectorAll(".del-btn").forEach(btn => btn.addEventListener("click", () => delEntry(btn.dataset.id)));
   // 翻页 / 筛选 / 排序 / 数据变化时，行做轻量入场动画
-  const key = page + ":" + total + ":" + tableState.sort + ":" + tableState.dir + ":" + tableState.date;
+  const key = page + ":" + total + ":" + tableState.sort + ":" + tableState.dir + ":" + tableState.filter.from + ":" + tableState.filter.to;
   const animate = key !== tableAnimKey;
   tableAnimKey = key;
   if(animate){
@@ -2464,7 +2563,10 @@ function initSettings(){
   sd.addEventListener("change", commitSettleDay);
   sd.addEventListener("blur", commitSettleDay);
   sd.addEventListener("keydown", e => { if(e.key === "Enter") commitSettleDay(); });
-  document.getElementById("btnDriveConnect").addEventListener("click", () => connectDrive().then(() => { setDriveStatus("driveConnected"); }).catch(() => setDriveStatus("driveError")));
+  document.getElementById("btnDriveConnect").addEventListener("click", () => {
+    if(driveAccessToken) disconnectDrive();
+    else connectDrive().then(() => { setDriveStatus("driveConnected"); }).catch(() => setDriveStatus("driveError"));
+  });
   document.getElementById("btnDriveSync").addEventListener("click", syncToDrive);
   document.getElementById("btnDriveRestore").addEventListener("click", restoreFromDrive);
   document.getElementById("btnExport").addEventListener("click", exportData);
@@ -2583,32 +2685,72 @@ function renderDriveControls(){
   const sync = document.getElementById("btnDriveSync");
   const restore = document.getElementById("btnDriveRestore");
   if(input && document.activeElement !== input) input.value = clientId;
-  if(connect) connect.disabled = !clientId;
+  if(connect){
+    connect.disabled = !clientId;
+    connect.classList.toggle("btn-danger", connected);
+    connect.textContent = connected ? t("driveLogout") : t("driveConnect");
+  }
   if(sync) sync.disabled = !connected;
   if(restore) restore.disabled = !connected;
   if(!connected) setDriveStatus(clientId ? "driveReady" : "driveNeedClient");
   else if(!document.getElementById("driveStatus").textContent) setDriveStatus("driveConnected");
 }
+let driveTokenWaiter = null;
+function initDriveTokenClient(){
+  const clientId = getDriveClientId();
+  if(driveTokenClient && driveTokenClientId === clientId) return driveTokenClient;
+  driveTokenClientId = clientId;
+  driveTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id:clientId, scope:DRIVE_SCOPE, token_storage:"local",
+    callback:response => {
+      if(response.error){
+        driveAccessToken = ""; driveTokenExpiresAt = 0;
+        renderDriveControls();
+        if(driveTokenWaiter){ driveTokenWaiter.reject(new Error(response.error)); driveTokenWaiter = null; }
+        return;
+      }
+      driveAccessToken = response.access_token;
+      driveTokenExpiresAt = Date.now() + Math.max(60, Number(response.expires_in)||3600) * 1000;
+      renderDriveControls();
+      if(driveTokenWaiter){ driveTokenWaiter.resolve(response); driveTokenWaiter = null; }
+    }
+  });
+  return driveTokenClient;
+}
+function requestDriveToken(prompt){
+  return waitForGoogleIdentity().then(() => new Promise((resolve, reject) => {
+    driveTokenWaiter = { resolve, reject };
+    initDriveTokenClient().requestAccessToken({ prompt });
+  }));
+}
 function connectDrive(){
   const clientId = getDriveClientId();
   if(!clientId){ setDriveStatus("driveNeedClient"); return Promise.reject(new Error("missing client id")); }
-  return waitForGoogleIdentity().then(() => new Promise((resolve, reject) => {
-    driveTokenClientId = clientId;
-    driveTokenClient = google.accounts.oauth2.initTokenClient({
-      client_id:clientId, scope:DRIVE_SCOPE,
-      callback:response => {
-        if(response.error){ driveAccessToken = ""; driveTokenExpiresAt = 0; renderDriveControls(); reject(new Error(response.error)); return; }
-        driveAccessToken = response.access_token;
-        driveTokenExpiresAt = Date.now() + Math.max(60, Number(response.expires_in)||3600) * 1000;
-        renderDriveControls(); resolve(response);
-      }
-    });
-    driveTokenClient.requestAccessToken({prompt:driveAccessToken ? "" : "consent"});
-  }));
+  return requestDriveToken("consent");
+}
+function restoreDriveSession(){
+  if(IS_DEMO_PAGE || driveAccessToken) return Promise.resolve();
+  if(!getDriveClientId() || !window.google || !google.accounts || !google.accounts.oauth2) return Promise.resolve();
+  return requestDriveToken("none").catch(err => {
+    // 没有可静默恢复的会话：保持未连接状态，等待用户主动连接
+    console.warn("Drive silent restore unavailable:", err);
+  });
+}
+function disconnectDrive(){
+  const token = driveAccessToken;
+  driveAccessToken = ""; driveTokenExpiresAt = 0;
+  driveTokenClient = null; driveTokenClientId = null;
+  if(token && window.google && google.accounts && google.accounts.oauth2){
+    try{ google.accounts.oauth2.revoke(token, () => {}); }catch(e){}
+  }
+  try{ localStorage.removeItem("gsi_session"); }catch(e){}
+  renderDriveControls();
+  setDriveStatus("driveLoggedOut");
 }
 async function ensureDriveAccess(){
   if(driveAccessToken && Date.now() < driveTokenExpiresAt - 30000) return;
-  await connectDrive();
+  await restoreDriveSession();
+  if(!driveAccessToken) throw new Error("Drive not connected");
 }
 async function driveRequest(url, options={}){
   await ensureDriveAccess();
@@ -2724,6 +2866,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSettings();
   initRangePicker();
   applyTheme();
+  restoreDriveSession();
   renderAll();
 });
 </script>
