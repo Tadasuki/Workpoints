@@ -2676,7 +2676,7 @@ function waitForGoogleIdentity(){
 }
 function setDriveStatus(key){
   const el = document.getElementById("driveStatus");
-  if(el) el.textContent = t(key);
+  if(el){ el.textContent = t(key); el.dataset.key = key; }
 }
 function renderDriveControls(){
   const clientId = getDriveClientId(), connected = Boolean(driveAccessToken);
@@ -2692,8 +2692,14 @@ function renderDriveControls(){
   }
   if(sync) sync.disabled = !connected;
   if(restore) restore.disabled = !connected;
-  if(!connected) setDriveStatus(clientId ? "driveReady" : "driveNeedClient");
-  else if(!document.getElementById("driveStatus").textContent) setDriveStatus("driveConnected");
+  // 只在空闲状态下更新提示文案，避免覆盖“正在同步…/已同步/已登出”等瞬态信息
+  const statusEl = document.getElementById("driveStatus");
+  const curKey = statusEl && statusEl.dataset.key;
+  if(!connected){
+    if(curKey !== "driveLoggedOut") setDriveStatus(clientId ? "driveReady" : "driveNeedClient");
+  } else if(!curKey || curKey === "driveReady" || curKey === "driveNeedClient" || curKey === "driveLoggedOut"){
+    setDriveStatus("driveConnected");
+  }
 }
 let driveTokenWaiter = null;
 function initDriveTokenClient(){
@@ -2730,11 +2736,15 @@ function connectDrive(){
 }
 function restoreDriveSession(){
   if(IS_DEMO_PAGE || driveAccessToken) return Promise.resolve();
-  if(!getDriveClientId() || !window.google || !google.accounts || !google.accounts.oauth2) return Promise.resolve();
-  return requestDriveToken("none").catch(err => {
-    // 没有可静默恢复的会话：保持未连接状态，等待用户主动连接
-    console.warn("Drive silent restore unavailable:", err);
-  });
+  if(!getDriveClientId()) return Promise.resolve();
+  // GSI 脚本是 async defer 加载的，可能晚于 DOMContentLoaded：先等它就绪再静默恢复，
+  // 否则每次刷新都会因为 window.google 尚未存在而直接放弃，导致无法保持连接。
+  return waitForGoogleIdentity()
+    .then(() => requestDriveToken("none"))
+    .catch(err => {
+      // 没有可静默恢复的会话：保持未连接状态，等待用户主动连接
+      console.warn("Drive silent restore unavailable:", err);
+    });
 }
 function disconnectDrive(){
   const token = driveAccessToken;
