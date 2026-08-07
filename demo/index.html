@@ -1262,6 +1262,18 @@ function fmtHoursValue(hours){
 function entryMinutes(e){
   return e && e.hours != null ? Math.max(0, Number(e.hours)||0) * 60 : Math.max(0, Number(e && e.minutes)||0);
 }
+/* 完成时间（毫秒）：开始时间 + 耗时；无耗时但有结束时段则用结束时段，支持跨午夜 */
+function entryEndMs(e){
+  const startMs = e.ts ? new Date(e.ts).getTime() : 0;
+  const durMin = entryMinutes(e);
+  if(durMin > 0) return startMs + durMin * 60000;
+  if(e.endHour != null){
+    const d = new Date(startMs);
+    if(e.startHour != null && e.endHour < e.startHour) d.setDate(d.getDate() + 1);
+    return d.setHours(e.endHour, 0, 0, 0);
+  }
+  return startMs;
+}
 function fmtEntryDuration(e){ return e && e.hours != null ? fmtHoursValue(e.hours) : fmtDur(e && e.minutes); }
 function fmtDay(d){
   if(isZH()) return (d.getMonth()+1) + "月" + d.getDate() + "日";
@@ -1986,7 +1998,7 @@ function filteredEntries(){
     let va, vb;
     if(field === "earn"){ va = a.orders * entryRate(a); vb = b.orders * entryRate(b); }
     else if(field === "dur"){ va = entryMinutes(a); vb = entryMinutes(b); }
-    else { va = a.ts; vb = b.ts; }
+    else { va = entryEndMs(a); vb = entryEndMs(b); }
     if(va < vb) return -dir;
     if(va > vb) return dir;
     return a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0;
@@ -2244,11 +2256,48 @@ function delEntry(id){
 }
 
 /* ---------- 表单 ---------- */
+/* 时间三件套：开始 / 结束 / 耗时。知道任意两个即可推出第三个，自动补全剩余字段。 */
+function timeToMin(v){ if(!v) return null; const [h,m] = v.split(":").map(Number); return h*60 + m; }
+function timeStr(min){ min = ((min % 1440) + 1440) % 1440; return String(Math.floor(min/60)).padStart(2,"0") + ":" + String(min%60).padStart(2,"0"); }
+function syncTimeFields(changed){
+  const changedEl = document.getElementById(changed === "start" ? "inStart" : changed === "end" ? "inEnd" : "inHours");
+  // 用户主动清空某个字段时不要回填，避免和用户“想删掉”的意图打架
+  if(changedEl.value.trim() === "") return;
+  const start = document.getElementById("inStart").value;
+  const end = document.getElementById("inEnd").value;
+  const hRaw = document.getElementById("inHours").value.trim();
+  const s = timeToMin(start), e = timeToMin(end);
+  const hVal = parseFloat(hRaw);
+  const hasS = s != null, hasE = e != null, hasH = hRaw !== "" && isFinite(hVal) && hVal > 0;
+  const n = (hasS?1:0) + (hasE?1:0) + (hasH?1:0);
+  if(n < 2) return;
+  const inStart = document.getElementById("inStart");
+  const inEnd = document.getElementById("inEnd");
+  const inHours = document.getElementById("inHours");
+  const roundH = v => Math.round(v * 100) / 100;
+  const diffHours = () => roundH(((e - s + 1440) % 1440) / 60);
+  if(!hasS){
+    inStart.value = timeStr(e - hVal * 60);
+  } else if(!hasE){
+    inEnd.value = timeStr(s + hVal * 60);
+  } else if(!hasH){
+    const h = diffHours();
+    inHours.value = h > 0 ? String(h) : "";
+  } else if(changed === "hours"){
+    inEnd.value = timeStr(s + hVal * 60);
+  } else {
+    const h = diffHours();
+    inHours.value = h > 0 ? String(h) : "";
+  }
+}
 function initForm(){
   document.getElementById("inDate").value = new Date().toISOString().slice(0,10);
   const upd = () => updateFormPreview();
   document.getElementById("inOrders").addEventListener("input", upd);
   document.getElementById("inHours").addEventListener("input", upd);
+  document.getElementById("inStart").addEventListener("input", () => syncTimeFields("start"));
+  document.getElementById("inEnd").addEventListener("input", () => syncTimeFields("end"));
+  document.getElementById("inHours").addEventListener("input", () => syncTimeFields("hours"));
   document.getElementById("inLedger").addEventListener("change", e => {
     state.activeId = e.target.value;
     saveView();
@@ -2267,12 +2316,14 @@ function initForm(){
     const led = ledgerById(state.activeId) || state.ledgers[0];
     if(!led){ toast(t("ledgerEmpty")); return; }
     const [y,mo,d] = date.split("-").map(Number);
-    let startHour = null;
-    let endHour = null;
-    if(start){ const [hh] = start.split(":").map(Number); startHour = hh; }
-    if(end){ const [hh] = end.split(":").map(Number); endHour = hh; }
+    const [sh, sm] = start ? start.split(":").map(Number) : [];
+    const [eh, em] = end ? end.split(":").map(Number) : [];
+    const startHour = sh != null ? sh : null;
+    const endHour = eh != null ? eh : null;
+    // 以开始时间为锚点（无开始则以结束时间），保留分钟精度，便于按完成时间排序
     const anchorHour = startHour != null ? startHour : (endHour != null ? endHour : 12);
-    const ts = new Date(y, mo-1, d, anchorHour).getTime();
+    const anchorMin = start ? sm : (end ? em : 0);
+    const ts = new Date(y, mo-1, d, anchorHour, anchorMin).getTime();
     const entry = {
       id: "e"+Date.now().toString(36)+Math.floor(Math.random()*1e4),
       ts: new Date(ts).toISOString(),
