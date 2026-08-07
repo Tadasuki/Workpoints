@@ -623,7 +623,7 @@ body{font-weight:600}
 .ledger-sidebar-mask.open{opacity:1; pointer-events:auto}
 .ledger-sidebar{
   position:fixed; top:0; right:0; bottom:0; z-index:65;
-  width:min(340px, 88vw);
+  width:min(400px, 92vw);
   background:var(--surface); -webkit-backdrop-filter:blur(24px) saturate(140%); backdrop-filter:blur(24px) saturate(140%);
   border-left:1px solid var(--hairline); box-shadow:var(--shadow-lg);
   padding:22px 20px calc(24px + env(safe-area-inset-bottom));
@@ -631,6 +631,18 @@ body{font-weight:600}
   transform:translateX(105%); transition:transform .32s var(--ease-spring);
 }
 .ledger-sidebar.open{transform:none}
+.ledger-sidebar-resizer{
+  position:fixed; top:0; bottom:0; width:7px;
+  cursor:ew-resize; touch-action:none; z-index:66;
+}
+.ledger-sidebar-resizer::after{
+  content:""; position:absolute; left:3px; top:0; bottom:0; width:1px;
+  background:transparent; transition:background .2s var(--ease-out);
+}
+.ledger-sidebar-resizer:hover::after,
+.ledger-sidebar-resizer.dragging::after{
+  background:color-mix(in srgb, var(--accent) 55%, transparent);
+}
 .sidebar-head{display:flex; align-items:flex-start; justify-content:space-between; gap:10px}
 .sidebar-head h3{font-family:var(--font-display); font-size:20px; font-weight:500; letter-spacing:0}
 .sidebar-head .sub{font-size:11.5px; color:var(--muted); margin-top:4px; line-height:1.5}
@@ -890,6 +902,7 @@ body{font-weight:600}
   <button class="btn btn-primary sidebar-add" id="btnAddLedger" type="button" data-i18n="ledgerAdd">＋ 新建账本</button>
   <div class="ledger-list" id="ledgerList"></div>
 </aside>
+<div class="ledger-sidebar-resizer" id="ledgerSidebarResizer" role="separator" aria-orientation="vertical" data-i18n-aria="ledgerDragHint" aria-label="拖动调整宽度"></div>
 
 <div class="toasts" id="toasts"></div>
 
@@ -948,7 +961,7 @@ const I18N = {
     ledgerNameLabel:"账本名称", ledgerNameErr:"请输入账本名称",
     ledgerModalAdd:"新建账本", ledgerModalEdit:"重命名账本", save:"保存",
     delLedgerTitle:"删除账本？", delLedgerMsg:"将删除「{name}」及其 {n} 条记录，此操作不可恢复。",
-    thLedger:"账本"
+    thLedger:"账本", ledgerDragHint:"拖动调整宽度"
   },
   en: {
     brand:"WorkPoints", brandSub:"兼职收入 · Part-time Income", tagline:"Part-time income · visualized",
@@ -995,7 +1008,7 @@ const I18N = {
     ledgerNameLabel:"Ledger name", ledgerNameErr:"Enter a ledger name",
     ledgerModalAdd:"New ledger", ledgerModalEdit:"Rename ledger", save:"Save",
     delLedgerTitle:"Delete this ledger?", delLedgerMsg:"This will delete “{name}” and its {n} entries. This cannot be undone.",
-    thLedger:"Ledger"
+    thLedger:"Ledger", ledgerDragHint:"Drag to resize"
   }
 };
 
@@ -1722,6 +1735,7 @@ function applyLang(){
   document.getElementById("brandSub").textContent = IS_DEMO_PAGE ? (isZH() ? "WorkPoints · 演示数据" : "WorkPoints · Demo data") : t("brandSub");
   document.getElementById("footNote").textContent = t("footNote");
   document.querySelectorAll("[data-i18n]").forEach(n => { n.textContent = t(n.getAttribute("data-i18n")); });
+  document.querySelectorAll("[data-i18n-aria]").forEach(n => { n.setAttribute("aria-label", t(n.getAttribute("data-i18n-aria"))); });
   document.getElementById("monthSub").textContent = tf("monthSub", {day:getSettleDay()});
   document.getElementById("brandBadge").textContent = state.settings.currency === "USD" ? "$" : "¥";
   renderDriveControls();
@@ -2088,14 +2102,75 @@ function openLedgerSidebar(){
   document.getElementById("ledgerSidebar").classList.add("open");
   document.getElementById("ledgerSidebar").setAttribute("aria-hidden", "false");
   document.getElementById("ledgerSidebarMask").classList.add("open");
+  positionSidebarResizer();
 }
 function closeLedgerSidebar(){
   document.getElementById("ledgerSidebar").classList.remove("open");
   document.getElementById("ledgerSidebar").setAttribute("aria-hidden", "true");
   document.getElementById("ledgerSidebarMask").classList.remove("open");
+  positionSidebarResizer();
 }
 function toggleLedgerSidebar(){
   document.getElementById("ledgerSidebar").classList.contains("open") ? closeLedgerSidebar() : openLedgerSidebar();
+}
+const SIDEBAR_W_KEY = "wp.sidebarW.v1", SIDEBAR_MIN_W = 280, SIDEBAR_MAX_W = 560;
+function sidebarWidthFallback(){
+  return Math.min(400, Math.max(260, window.innerWidth - 40));
+}
+function clampSidebarWidth(w){
+  const maxW = Math.min(SIDEBAR_MAX_W, window.innerWidth - 48);
+  return Math.max(SIDEBAR_MIN_W, Math.min(w, maxW));
+}
+function applySidebarWidth(w){
+  const el = document.getElementById("ledgerSidebar");
+  if(el) el.style.width = Math.round(clampSidebarWidth(w)) + "px";
+  positionSidebarResizer();
+}
+function positionSidebarResizer(){
+  const el = document.getElementById("ledgerSidebar");
+  const handle = document.getElementById("ledgerSidebarResizer");
+  if(!handle || !el) return;
+  const w = parseFloat(el.style.width) || Math.min(400, window.innerWidth * 0.92);
+  handle.style.left = (window.innerWidth - w - 3) + "px";
+  handle.style.visibility = el.classList.contains("open") ? "visible" : "hidden";
+}
+function loadSidebarWidth(){
+  let w = sidebarWidthFallback();
+  try{
+    const saved = parseFloat(localStorage.getItem(SIDEBAR_W_KEY));
+    if(saved && saved >= SIDEBAR_MIN_W) w = clampSidebarWidth(saved);
+  }catch(e){}
+  applySidebarWidth(w);
+}
+function initLedgerResizer(){
+  const el = document.getElementById("ledgerSidebar");
+  const handle = document.getElementById("ledgerSidebarResizer");
+  if(!handle) return;
+  loadSidebarWidth();
+  let dragging = false, dragStartX = 0, startW = 0;
+  handle.addEventListener("pointerdown", e => {
+    dragging = true;
+    dragStartX = e.clientX;
+    startW = el.getBoundingClientRect().width;
+    handle.classList.add("dragging");
+    handle.setPointerCapture(e.pointerId);
+    document.body.style.userSelect = "none";
+    e.preventDefault();
+  });
+  handle.addEventListener("pointermove", e => {
+    if(!dragging) return;
+    applySidebarWidth(startW - (e.clientX - dragStartX));
+  });
+  const endDrag = () => {
+    if(!dragging) return;
+    dragging = false;
+    handle.classList.remove("dragging");
+    document.body.style.userSelect = "";
+    try{ localStorage.setItem(SIDEBAR_W_KEY, String(Math.round(el.getBoundingClientRect().width))); }catch(err){}
+  };
+  handle.addEventListener("pointerup", endDrag);
+  handle.addEventListener("pointercancel", endDrag);
+  window.addEventListener("resize", () => { if(!dragging) loadSidebarWidth(); });
 }
 function initLedgerUI(){
   const list = document.getElementById("ledgerList");
@@ -2126,6 +2201,7 @@ function initLedgerUI(){
     else closeLedgerSidebar();
   });
   document.getElementById("ledgerModalName").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); saveLedgerModal(); } });
+  initLedgerResizer();
 }
 
 /* ---------- 主题 ---------- */
