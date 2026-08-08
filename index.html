@@ -320,34 +320,76 @@ td .mono{font-variant-numeric:tabular-nums}
 .set-row label{font-size:12.5px; font-weight:600; color:var(--ink-2)}
 .set-row input{width:96px; height:32px; padding:0 10px; text-align:right; font-size:13px; background:var(--surface-2); border:1px solid var(--hairline); border-radius:8px; font-variant-numeric:tabular-nums}
 .set-row input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
-.set-select{
-  height:32px; min-width:110px; padding:0 8px; font-size:13px; font-weight:600; color:var(--ink);
-  background:var(--surface-2); border:1px solid var(--hairline); border-radius:8px; font-family:var(--font-sans);
-  cursor:pointer; transition:border-color .2s, box-shadow .2s;
-}
-.set-select:hover{border-color:color-mix(in srgb, var(--accent) 36%, var(--hairline))}
-.set-select:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
 .fx-rate{font-size:12.5px; font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums; margin-left:auto; transition:color .25s}
 .fx-rate.pulse{color:var(--accent); animation:fxPulse .6s var(--ease-out)}
 @keyframes fxPulse{0%{transform:scale(1)} 45%{transform:scale(1.08)} 100%{transform:scale(1)}}
 .set-row .fx-rate + .icon-btn{margin-left:0}
 .set-row .icon-btn{width:30px; height:30px; flex:none; transition:transform .13s var(--ease-out), background .2s}
 .set-row .icon-btn:hover{background:var(--surface-2)}
-.set-row input#setCustomCur{width:64px; text-align:center; text-transform:uppercase; letter-spacing:.06em}
-.set-cur-list{display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end}
-.set-cur-chip{
-  display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:999px;
-  background:rgba(126,112,94,.12); color:var(--ink-2); font-size:11px; font-weight:600;
-  animation:chipIn .3s var(--ease-spring);
+
+/* 自定义币种下拉（非系统控件） */
+.cur-dd{position:relative}
+.cur-dd-trigger{
+  display:inline-flex; align-items:center; gap:8px; height:34px; padding:0 6px 0 12px;
+  background:var(--surface-2); border:1px solid var(--hairline); border-radius:9px; cursor:pointer;
+  font-family:var(--font-sans); transition:transform .13s var(--ease-out), border-color .2s, box-shadow .2s, background .2s;
 }
-@keyframes chipIn{from{opacity:0; transform:scale(.82) translateY(2px)} to{opacity:1; transform:none}}
-.set-cur-chip button{
-  background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; line-height:1;
-  padding:0; width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center;
-  border-radius:50%; transition:transform .13s var(--ease-out), color .2s, background .2s;
+.cur-dd-trigger:hover{border-color:color-mix(in srgb, var(--accent) 36%, var(--hairline))}
+.cur-dd-trigger:active{transform:scale(.97)}
+.cur-dd-trigger[aria-expanded="true"]{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
+.cur-dd-sym{font-size:14px; font-weight:700; color:var(--accent); font-variant-numeric:tabular-nums}
+.cur-dd-code{font-size:13px; font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums}
+.cur-dd-chev{width:14px; height:14px; flex:none; color:var(--muted); transition:transform .25s var(--ease-out)}
+.cur-dd-trigger[aria-expanded="true"] .cur-dd-chev{transform:rotate(180deg)}
+.cur-dd-panel{
+  position:absolute; top:calc(100% + 6px); right:0; width:232px; z-index:65;
+  background:var(--surface); border:1px solid var(--hairline); border-radius:13px; box-shadow:var(--shadow-lg);
+  -webkit-backdrop-filter:blur(24px) saturate(140%); backdrop-filter:blur(24px) saturate(140%);
+  transform-origin:top right; overflow:hidden;
+  transition:transform .25s var(--ease-spring), opacity .2s var(--ease-out);
+  opacity:0; transform:scale(.9) translateY(-6px); pointer-events:none;
 }
-.set-cur-chip button:hover{color:var(--accent); background:var(--accent-wash)}
-.set-cur-chip button:active{transform:scale(.82)}
+.cur-dd-panel.open{opacity:1; transform:none; pointer-events:auto}
+.cur-dd-list{max-height:248px; overflow-y:auto; overscroll-behavior:contain; padding:6px}
+.cur-dd-row{
+  display:flex; align-items:center; gap:8px; width:100%; padding:8px 10px; border-radius:9px;
+  background:none; border:none; cursor:pointer; font-family:var(--font-sans); text-align:left;
+  transition:background .15s;
+}
+.cur-dd-row:hover{background:var(--surface-2)}
+.cur-dd-row:active{transform:scale(.98)}
+.cur-dd-check{width:16px; height:16px; flex:none; color:var(--accent); opacity:0; transition:opacity .15s}
+.cur-dd-row.active .cur-dd-check{opacity:1}
+.cur-dd-col{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
+.cur-dd-row-code{font-size:13px; font-weight:600; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.cur-dd-row-name{font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.cur-dd-rm{
+  width:22px; height:22px; flex:none; display:inline-flex; align-items:center; justify-content:center;
+  background:none; border:none; border-radius:50%; color:var(--muted); cursor:pointer;
+  transition:transform .13s var(--ease-out), color .2s, background .2s;
+}
+.cur-dd-rm svg{width:13px; height:13px}
+.cur-dd-rm:hover{color:var(--danger); background:color-mix(in srgb, var(--danger) 12%, transparent)}
+.cur-dd-rm:active{transform:scale(.8)}
+.cur-dd-add{
+  display:flex; align-items:center; gap:8px; width:100%; padding:10px; border:none; background:none;
+  cursor:pointer; font-family:var(--font-sans); font-size:13px; font-weight:600; color:var(--accent); text-align:left;
+  border-top:1px solid var(--hairline); transition:background .15s;
+}
+.cur-dd-add svg{width:14px; height:14px; flex:none}
+.cur-dd-add:hover{background:var(--surface-2)}
+.cur-dd-add:active{transform:scale(.98)}
+
+/* 添加币种弹窗 */
+.modal-field{display:flex; flex-direction:column; gap:6px; margin-bottom:12px}
+.modal-field label{font-size:12px; font-weight:600; color:var(--ink-2)}
+.modal-field input{
+  height:40px; padding:0 12px; font-size:14px; background:var(--surface-2);
+  border:1px solid var(--hairline); border-radius:11px; font-variant-numeric:tabular-nums; font-family:var(--font-sans);
+  transition:border-color .2s, box-shadow .2s;
+}
+.modal-field input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
+.modal-field input#curAddCode{text-transform:uppercase; letter-spacing:.08em}
 .set-btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
 .drive-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
 .drive-actions .btn{flex:1 1 120px}
@@ -630,6 +672,7 @@ body{font-weight:600}
   .set-row{align-items:flex-start}
   .set-row label{line-height:1.4; max-width:68%}
   .set-row input{width:104px; flex:none}
+  .cur-dd-list{max-height:180px}
   .form-fields{grid-template-columns:1fr}
   .field.wide{grid-column:auto}
   .form-foot{align-items:stretch}
@@ -958,12 +1001,21 @@ body{font-weight:600}
   <h3 data-i18n="settingsTitle">设置</h3>
   <p class="sub" data-i18n="settingsSub">币种、汇率、结算日、Google Drive 与数据管理</p>
   <div class="set-block">
-    <div class="set-row"><label data-i18n="currencyLabel">显示币种</label><select id="setCurrency" class="set-select"></select></div>
+    <div class="set-row">
+      <label data-i18n="currencyLabel">显示币种</label>
+      <div class="cur-dd" id="curDd">
+        <button type="button" class="cur-dd-trigger" id="curDdTrigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="cur-dd-sym" id="curDdSym">¥</span>
+          <span class="cur-dd-code" id="curDdCode">CNY</span>
+          <svg class="cur-dd-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="cur-dd-panel" id="curDdPanel" role="listbox">
+          <div class="cur-dd-list" id="curDdList"></div>
+          <button type="button" class="cur-dd-add" id="curDdAdd" data-i18n-aria="addCurLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg><span data-i18n="addCurLabel">添加货币</span></button>
+        </div>
+      </div>
+    </div>
     <div class="set-row"><label data-i18n="fxRateLabel">实时汇率</label><span class="fx-rate" id="setFxRate">–</span><button type="button" class="icon-btn" id="btnFxRefresh" aria-label="刷新汇率"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button></div>
-    <div class="set-row"><label data-i18n="customCurLabel">添加币种</label><input type="text" id="setCustomCur" maxlength="3" placeholder="USD" autocomplete="off"><button type="button" class="btn btn-ghost" id="btnAddCur" data-i18n="addBtn">添加</button></div>
-    <div class="set-row"><label data-i18n="fxIdLabel">接口 ID</label><input type="text" id="setFxId" inputmode="numeric"></div>
-    <div class="set-row"><label data-i18n="fxKeyLabel">接口 Key</label><input type="text" id="setFxKey" inputmode="numeric"></div>
-    <div class="set-row" id="customCurList" hidden></div>
     <div class="set-row"><label data-i18n="settleDayLabel">每月结算日（1–28日）</label><input type="number" id="setSettleDay" min="1" max="28" step="1" inputmode="numeric"></div>
   </div>
   <div class="set-block">
@@ -994,6 +1046,20 @@ body{font-weight:600}
     <div class="modal-actions">
       <button class="btn btn-ghost" id="modalCancel" data-i18n="cancel">取消</button>
       <button class="btn btn-danger" id="modalOk" data-i18n="confirm">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- 添加币种弹窗 -->
+<div class="modal-mask" id="curAddMask">
+  <div class="modal">
+    <h3 data-i18n="curAddTitle">添加币种</h3>
+    <p class="sub" data-i18n="curAddSub">输入三字币种代码与名称，系统会验证 API 是否支持该币种</p>
+    <div class="modal-field"><label data-i18n="curCodeLabel">币种代码</label><input type="text" id="curAddCode" maxlength="3" placeholder="USD" autocomplete="off"></div>
+    <div class="modal-field"><label data-i18n="curNameLabel">币种名称</label><input type="text" id="curAddName" placeholder="US Dollar" autocomplete="off"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="curAddCancel" data-i18n="cancel">取消</button>
+      <button class="btn btn-primary" id="curAddOk" data-i18n="addBtn">添加</button>
     </div>
   </div>
 </div>
@@ -1068,8 +1134,9 @@ const I18N = {
     importErr:"导入失败：文件格式不正确",
     undoRestored:"已恢复", confirmDel:"删除这条记录？",
     settingsTitle:"设置", settingsSub:"币种、汇率、结算日、Google Drive 与数据管理",
-    currencyLabel:"显示币种", fxRateLabel:"实时汇率", fxBase:"基准币种", customCurLabel:"添加币种", addBtn:"添加",
-    fxIdLabel:"接口 ID", fxKeyLabel:"接口 Key", curAddErr:"输入 3 位币种代码", curExists:"该币种已存在", curBad:"该币种代码无效或接口不支持", curAdded:"已添加币种 {code}", curRemoved:"已移除 {code}", fxRefreshed:"汇率已更新",
+    currencyLabel:"显示币种", fxRateLabel:"实时汇率", fxBase:"基准币种", addBtn:"添加",
+    addCurLabel:"添加货币", curAddTitle:"添加币种", curAddSub:"输入三字币种代码与名称，系统会验证 API 是否支持该币种", curCodeLabel:"币种代码", curNameLabel:"币种名称", curRemovedTitle:"移除该币种",
+    curAddErr:"请输入 3 位币种代码", curExists:"该币种已存在", curBad:"该币种代码无效或接口不支持", curAdded:"已添加币种 {code}", curRemoved:"已移除 {code}", fxRefreshed:"汇率已更新",
     rateLabel:"每单收入（元）", settleDayLabel:"每月结算日（1–28日）",
     driveConnect:"连接 Google Drive", driveSync:"同步到 Drive", driveRestore:"从 Drive 恢复", driveNeedClient:"Google Drive 尚未配置", driveReady:"点击连接 Google Drive", driveConnected:"Google Drive 已连接", driveSyncing:"正在同步…", driveUploaded:"已同步到 Google Drive", driveRestored:"已从 Google Drive 恢复", driveNoFile:"Drive 中还没有 WorkPoints 备份", driveError:"Google Drive 同步失败", driveLogout:"登出 Google Drive", driveLoggedOut:"已登出 Google Drive", driveNote:"使用内置 Google OAuth Client ID，数据保存在 Drive 私有应用空间",
     exportBtn:"导出数据", importBtn:"导入数据", clearBtn:"清空数据", setNote:"导入将替换当前记录 · 建议先导出备份",
@@ -1121,8 +1188,9 @@ const I18N = {
     importErr:"Import failed: invalid file",
     undoRestored:"Restored", confirmDel:"Delete this entry?",
     settingsTitle:"Settings", settingsSub:"Currency · exchange · settlement day · Google Drive · data",
-    currencyLabel:"Display currency", fxRateLabel:"Live rate", fxBase:"Base currency", customCurLabel:"Add currency", addBtn:"Add",
-    fxIdLabel:"API ID", fxKeyLabel:"API Key", curAddErr:"Enter a 3-letter currency code", curExists:"Currency already added", curBad:"Invalid code or API rejected it", curAdded:"Added {code}", curRemoved:"Removed {code}", fxRefreshed:"Rate updated",
+    currencyLabel:"Display currency", fxRateLabel:"Live rate", fxBase:"Base currency", addBtn:"Add",
+    addCurLabel:"Add currency", curAddTitle:"Add currency", curAddSub:"Enter a 3-letter currency code and name; we'll verify the API supports it", curCodeLabel:"Currency code", curNameLabel:"Currency name", curRemovedTitle:"Remove this currency",
+    curAddErr:"Enter a 3-letter currency code", curExists:"Currency already added", curBad:"Invalid code or API rejected it", curAdded:"Added {code}", curRemoved:"Removed {code}", fxRefreshed:"Rate updated",
     rateLabel:"Rate per order (CNY)", settleDayLabel:"Monthly settlement day (1–28)",
     driveConnect:"Connect Google Drive", driveSync:"Sync to Drive", driveRestore:"Restore from Drive", driveNeedClient:"Google Drive is not configured", driveReady:"Connect Google Drive to begin", driveConnected:"Google Drive connected", driveSyncing:"Syncing…", driveUploaded:"Synced to Google Drive", driveRestored:"Restored from Google Drive", driveNoFile:"No WorkPoints backup found in Drive", driveError:"Google Drive sync failed", driveLogout:"Sign out of Google Drive", driveLoggedOut:"Signed out of Google Drive", driveNote:"Uses the built-in Google OAuth Client ID; data stays in Drive's private app space",
     exportBtn:"Export", importBtn:"Import", clearBtn:"Clear all", setNote:"Import replaces current records — export a backup first.",
@@ -1312,7 +1380,11 @@ function startOfToday(){ const n=new Date(); return new Date(n.getFullYear(), n.
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function numFmt(n, d=0){ return Number(n).toLocaleString(isZH()?"zh-CN":"en-US", {minimumFractionDigits:d, maximumFractionDigits:d}); }
 function allCurrencies(){
-  const custom = (state.settings.customCurrencies || []).map(c => ({ code:c, sym:c, dp:2, zh:c, en:c }));
+  const custom = (state.settings.customCurrencies || []).map(c => {
+    const code = typeof c === "string" ? c : (c && c.code);
+    const name = (typeof c === "string" ? c : (c && (c.name || c.code))) || code;
+    return { code, sym:code, dp:2, zh:name, en:name };
+  }).filter(x => x.code);
   return CURRENCIES.concat(custom);
 }
 function curInfo(code){ return allCurrencies().find(c => c.code === code) || CURRENCIES[0]; }
@@ -1333,6 +1405,10 @@ function fetchFxRate(code, force){
   return fetch(url)
     .then(r => r.json())
     .then(d => {
+      if(d && typeof d.code === "number" && d.code !== 200){
+        const err = new Error("bad code"); err.fxBad = true; /* API 明确拒绝该币种 */
+        throw err;
+      }
       const rate = Number(d && d.rate);
       if(!Number.isFinite(rate) || rate <= 0) throw new Error("bad rate");
       state.settings.fx = Object.assign({}, state.settings.fx || {}, { [code]: rate });
@@ -1340,7 +1416,10 @@ function fetchFxRate(code, force){
       saveSettings();
       return rate;
     })
-    .catch(() => { return Number.isFinite(cached) && cached > 0 ? cached : (FALLBACK_RATES[code] || 1); });
+    .catch(e => {
+      if(e && e.fxBad) throw e; /* 币种不受支持：把错误抛给调用方 */
+      return Number.isFinite(cached) && cached > 0 ? cached : (FALLBACK_RATES[code] || 1);
+    });
 }
 function fmtMoney(v){
   const code = state.settings.currency || "CNY";
@@ -2714,43 +2793,43 @@ function initSettings(){
   const btn = document.getElementById("settingsBtn");
   const sd = document.getElementById("setSettleDay");
   sd.value = getSettleDay();
-  const open = () => { pop.classList.add("open"); renderSettingsValues(); };
-  const close = () => pop.classList.remove("open");
+  const open = () => { pop.classList.add("open"); closeCurDd(); renderSettingsValues(); };
+  const close = () => { pop.classList.remove("open"); closeCurDd(); };
   btn.addEventListener("click", e => { e.stopPropagation(); pop.classList.contains("open") ? close() : open(); });
   document.addEventListener("pointerdown", e => { if(!pop.contains(e.target) && !btn.contains(e.target)) close(); });
   document.addEventListener("keydown", e => { if(e.key === "Escape") close(); });
-  const curSel = document.getElementById("setCurrency");
-  curSel.addEventListener("change", () => {
-    const c = curSel.value; if(c && c !== state.settings.currency){
-      state.settings.currency = c; saveSettings(); applyLang(); renderAll(); renderSettingsValues();
-      fetchFxRate(c, true).then(() => { renderSettingsValues(); pulseFx(); renderAll(); });
-    }
-  });
+  const dd = document.getElementById("curDd");
+  const panel = document.getElementById("curDdPanel");
+  const trigger = document.getElementById("curDdTrigger");
+  document.addEventListener("pointerdown", e => { if(dd && !dd.contains(e.target)) closeCurDd(); });
+  trigger.addEventListener("click", e => { e.stopPropagation(); panel.classList.contains("open") ? closeCurDd() : openCurDd(); });
+  document.getElementById("curDdAdd").addEventListener("click", () => { closeCurDd(); openCurAdd(); });
   document.getElementById("btnFxRefresh").addEventListener("click", () => {
-    fetchFxRate(state.settings.currency, true).then(() => { renderSettingsValues(); pulseFx(); renderAll(); toast(t("fxRefreshed")); });
+    fetchFxRate(state.settings.currency, true).then(() => { renderSettingsValues(); pulseFx(); renderAll(); toast(t("fxRefreshed")); }).catch(() => {});
   });
-  const curInput = document.getElementById("setCustomCur");
-  const commitAddCur = () => {
-    const code = (curInput.value || "").trim().toUpperCase();
+  /* 添加币种弹窗 */
+  const curAddMask = document.getElementById("curAddMask");
+  const curAddCode = document.getElementById("curAddCode");
+  const curAddName = document.getElementById("curAddName");
+  const submitCurAdd = () => {
+    const code = curAddCode.value.trim().toUpperCase();
+    const name = curAddName.value.trim();
     if(!/^[A-Z]{3}$/.test(code)){ toast(t("curAddErr")); return; }
     if(allCurrencies().some(c => c.code === code)){ toast(t("curExists")); return; }
     fetchFxRate(code, true).then(rate => {
       if(!(Number.isFinite(rate) && rate > 0)){ toast(t("curBad")); return; }
-      state.settings.customCurrencies = (state.settings.customCurrencies || []).concat(code);
-      saveSettings(); curInput.value = ""; renderSettingsValues(); pulseFx(); renderFormLedger();
+      state.settings.customCurrencies = (state.settings.customCurrencies || []).concat({ code, name: name || code });
+      saveSettings(); closeCurAdd(); renderSettingsValues(); renderFormLedger(); renderAll();
       toast(tf("curAdded", {code}));
-    });
+    }).catch(() => { toast(t("curBad")); });
   };
-  document.getElementById("btnAddCur").addEventListener("click", commitAddCur);
-  curInput.addEventListener("keydown", e => { if(e.key === "Enter") commitAddCur(); });
-  const fxId = document.getElementById("setFxId"), fxKey = document.getElementById("setFxKey");
-  const commitCreds = () => {
-    state.settings.fxId = fxId.value.trim() || "88888888";
-    state.settings.fxKey = fxKey.value.trim() || "88888888";
-    saveSettings();
-  };
-  fxId.addEventListener("change", commitCreds);
-  fxKey.addEventListener("change", commitCreds);
+  curAddMask.addEventListener("pointerdown", e => { if(e.target === curAddMask) closeCurAdd(); });
+  document.getElementById("curAddCancel").addEventListener("click", closeCurAdd);
+  document.getElementById("curAddOk").addEventListener("click", submitCurAdd);
+  curAddCode.addEventListener("input", () => { curAddCode.value = curAddCode.value.toUpperCase(); });
+  curAddCode.addEventListener("keydown", e => { if(e.key === "Enter") submitCurAdd(); });
+  curAddName.addEventListener("keydown", e => { if(e.key === "Enter") submitCurAdd(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape") closeCurAdd(); });
   const commitSettleDay = () => {
     state.settings.settleDay = Math.min(28, Math.max(1, Math.round(parseFloat(sd.value) || DEFAULTS.settleDay)));
     sd.value = getSettleDay(); saveSettings(); renderAll();
@@ -2790,44 +2869,94 @@ function pulseFx(){
   setTimeout(() => el.classList.remove("pulse"), 650);
 }
 
+/* ---- 自定义币种下拉（非系统控件） ---- */
+function openCurDd(){
+  renderCurDdList();
+  const panel = document.getElementById("curDdPanel");
+  const trigger = document.getElementById("curDdTrigger");
+  if(panel) panel.classList.add("open");
+  if(trigger) trigger.setAttribute("aria-expanded", "true");
+}
+function closeCurDd(){
+  const panel = document.getElementById("curDdPanel");
+  const trigger = document.getElementById("curDdTrigger");
+  if(panel) panel.classList.remove("open");
+  if(trigger) trigger.setAttribute("aria-expanded", "false");
+}
+function curDdRow(c, isCustom){
+  const active = c.code === state.settings.currency;
+  const row = document.createElement("button");
+  row.type = "button"; row.className = "cur-dd-row" + (active ? " active" : "");
+  row.setAttribute("role", "option");
+  row.setAttribute("aria-selected", String(active));
+  row.dataset.code = c.code;
+  const nameHTML = (isCustom && c.zh && c.zh !== c.code)
+    ? '<span class="cur-dd-row-name">'+esc(c.zh)+'</span>' : '';
+  row.innerHTML = '<svg class="cur-dd-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' +
+    '<span class="cur-dd-col"><span class="cur-dd-row-code">'+esc(c.code)+'</span>'+nameHTML+'</span>';
+  if(isCustom){
+    const rm = document.createElement("button");
+    rm.type = "button"; rm.className = "cur-dd-rm";
+    rm.setAttribute("aria-label", t("curRemovedTitle"));
+    rm.title = t("curRemovedTitle");
+    rm.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+    rm.addEventListener("click", ev => { ev.stopPropagation(); removeCustomCur(c.code); });
+    row.appendChild(rm);
+  }
+  row.addEventListener("click", () => {
+    if(c.code === state.settings.currency){ closeCurDd(); return; }
+    state.settings.currency = c.code; saveSettings(); applyLang(); renderAll(); renderSettingsValues();
+    fetchFxRate(c.code, true).then(() => { renderSettingsValues(); pulseFx(); renderAll(); }).catch(() => {});
+    closeCurDd();
+  });
+  return row;
+}
+function renderCurDdList(){
+  const list = document.getElementById("curDdList");
+  if(!list) return;
+  list.innerHTML = "";
+  allCurrencies().forEach(c => {
+    list.appendChild(curDdRow(c, !CURRENCIES.some(x => x.code === c.code)));
+  });
+}
+function removeCustomCur(code){
+  state.settings.customCurrencies = (state.settings.customCurrencies || []).filter(c =>
+    (typeof c === "string" ? c : c && c.code) !== code);
+  if(state.settings.currency === code) state.settings.currency = "CNY"; /* 删除当前显示币种时回到基准 */
+  saveSettings(); renderSettingsValues(); renderFormLedger(); renderAll();
+  toast(tf("curRemoved", {code}));
+}
+function openCurAdd(){
+  const mask = document.getElementById("curAddMask");
+  const codeEl = document.getElementById("curAddCode");
+  const nameEl = document.getElementById("curAddName");
+  if(!mask) return;
+  codeEl.value = ""; nameEl.value = "";
+  mask.classList.add("open");
+  setTimeout(() => codeEl.focus(), 120);
+}
+function closeCurAdd(){
+  const mask = document.getElementById("curAddMask");
+  if(mask) mask.classList.remove("open");
+}
+
 function renderSettingsValues(){
-  const curSel = document.getElementById("setCurrency");
-  if(curSel){
-    const cur = state.settings.currency;
-    curSel.innerHTML = allCurrencies().map(c => '<option value="'+esc(c.code)+'"'+(c.code===cur?" selected":"")+'>'+
-      (isZH() ? (c.zh === c.code ? c.code : c.zh+" ("+c.code+")") : (c.code+(c.en===c.code?"":" · "+c.en))) +
-      '</option>').join("");
+  const sym = document.getElementById("curDdSym"), code = document.getElementById("curDdCode");
+  if(sym && code){
+    sym.textContent = curInfo(state.settings.currency).sym;
+    code.textContent = state.settings.currency;
   }
   const fxEl = document.getElementById("setFxRate");
   if(fxEl){
-    const code = state.settings.currency;
-    if(code === "CNY"){
+    const cur = state.settings.currency;
+    if(cur === "CNY"){
       fxEl.textContent = t("fxBase");
     }else{
-      const r = fxRate(code);
-      fxEl.textContent = "1 " + code + " ≈ ¥" + (Number.isFinite(r) ? r.toFixed(4) : "–");
+      const r = fxRate(cur);
+      fxEl.textContent = "1 " + cur + " ≈ ¥" + (Number.isFinite(r) ? r.toFixed(4) : "–");
     }
   }
-  const fid = document.getElementById("setFxId"), fk = document.getElementById("setFxKey");
-  if(fid && !fid.matches(":focus")) fid.value = state.settings.fxId || "88888888";
-  if(fk && !fk.matches(":focus")) fk.value = state.settings.fxKey || "88888888";
-  const list = document.getElementById("customCurList");
-  if(list){
-    const custom = state.settings.customCurrencies || [];
-    if(custom.length){
-      list.hidden = false;
-      list.innerHTML = '<label>'+esc(t("customCurLabel"))+'</label><span class="set-cur-list">' + custom.map(code =>
-        '<span class="set-cur-chip">'+esc(code)+'<button type="button" data-rm="'+esc(code)+'" aria-label="'+esc(t("clearBtn"))+'">✕</button></span>'
-      ).join("") + '</span>';
-      list.querySelectorAll("[data-rm]").forEach(b => b.addEventListener("click", () => {
-        state.settings.customCurrencies = (state.settings.customCurrencies || []).filter(x => x !== b.dataset.rm);
-        saveSettings(); renderSettingsValues(); renderFormLedger();
-        toast(tf("curRemoved", {code:b.dataset.rm}));
-      }));
-    }else{
-      list.hidden = true;
-    }
-  }
+  renderCurDdList();
 }
 
 function initRangePicker(){
@@ -3123,7 +3252,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderAll();
   /* 拉取当前显示币种的实时汇率，让首屏数字尽量准确 */
   const cur = state.settings.currency;
-  if(cur && cur !== "CNY") fetchFxRate(cur, false);
+  if(cur && cur !== "CNY") fetchFxRate(cur, false).catch(() => {});
 });
 </script>
 </body>
