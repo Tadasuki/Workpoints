@@ -320,6 +320,34 @@ td .mono{font-variant-numeric:tabular-nums}
 .set-row label{font-size:12.5px; font-weight:600; color:var(--ink-2)}
 .set-row input{width:96px; height:32px; padding:0 10px; text-align:right; font-size:13px; background:var(--surface-2); border:1px solid var(--hairline); border-radius:8px; font-variant-numeric:tabular-nums}
 .set-row input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
+.set-select{
+  height:32px; min-width:110px; padding:0 8px; font-size:13px; font-weight:600; color:var(--ink);
+  background:var(--surface-2); border:1px solid var(--hairline); border-radius:8px; font-family:var(--font-sans);
+  cursor:pointer; transition:border-color .2s, box-shadow .2s;
+}
+.set-select:hover{border-color:color-mix(in srgb, var(--accent) 36%, var(--hairline))}
+.set-select:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
+.fx-rate{font-size:12.5px; font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums; margin-left:auto; transition:color .25s}
+.fx-rate.pulse{color:var(--accent); animation:fxPulse .6s var(--ease-out)}
+@keyframes fxPulse{0%{transform:scale(1)} 45%{transform:scale(1.08)} 100%{transform:scale(1)}}
+.set-row .fx-rate + .icon-btn{margin-left:0}
+.set-row .icon-btn{width:30px; height:30px; flex:none; transition:transform .13s var(--ease-out), background .2s}
+.set-row .icon-btn:hover{background:var(--surface-2)}
+.set-row input#setCustomCur{width:64px; text-align:center; text-transform:uppercase; letter-spacing:.06em}
+.set-cur-list{display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end}
+.set-cur-chip{
+  display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:999px;
+  background:rgba(126,112,94,.12); color:var(--ink-2); font-size:11px; font-weight:600;
+  animation:chipIn .3s var(--ease-spring);
+}
+@keyframes chipIn{from{opacity:0; transform:scale(.82) translateY(2px)} to{opacity:1; transform:none}}
+.set-cur-chip button{
+  background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; line-height:1;
+  padding:0; width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center;
+  border-radius:50%; transition:transform .13s var(--ease-out), color .2s, background .2s;
+}
+.set-cur-chip button:hover{color:var(--accent); background:var(--accent-wash)}
+.set-cur-chip button:active{transform:scale(.82)}
 .set-btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
 .drive-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
 .drive-actions .btn{flex:1 1 120px}
@@ -678,6 +706,12 @@ body{font-weight:600}
 }
 .ledger-select:hover{border-color:color-mix(in srgb, var(--accent) 36%, var(--hairline))}
 .ledger-select:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash)}
+.ledger-select-row{display:flex; gap:8px}
+.ledger-select-row .ledger-select{flex:1; min-width:0}
+.ledger-select-row .cur-select{
+  flex:0 0 104px; font-size:12.5px; text-align:center; cursor:pointer;
+  transition:border-color .2s, box-shadow .2s;
+}
 .ledger-tag{
   display:inline-block; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:middle;
   padding:2px 8px; border-radius:999px; font-size:10.5px; font-weight:600;
@@ -787,7 +821,6 @@ body{font-weight:600}
   </div>
   <div class="controls">
     <div class="seg" id="langSeg" role="tablist"></div>
-    <div class="seg" id="curSeg" role="tablist"></div>
     <button class="icon-btn" id="themeBtn" aria-label="主题"></button>
     <button class="icon-btn" id="ledgerBtn" aria-label="账本"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></button>
     <button class="icon-btn" id="settingsBtn" aria-label="设置"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></button>
@@ -893,7 +926,7 @@ body{font-weight:600}
       <p class="section-sub" id="addSub">每单 ¥0.05 · 收入自动计算</p>
       <form id="entryForm">
         <div class="form-fields">
-          <div class="field wide"><label data-i18n="recordToLabel">记账到</label><select id="inLedger" class="ledger-select"></select></div>
+          <div class="field wide"><label data-i18n="recordToLabel">记账到</label><div class="ledger-select-row"><select id="inLedger" class="ledger-select" aria-label="Ledger"></select><select id="inCurrency" class="ledger-select cur-select" data-i18n-aria="currencyLabel" aria-label="Currency" title="Currency"></select></div></div>
           <div class="field"><label data-i18n="fDate">日期</label><input type="date" id="inDate"></div>
           <div class="field"><label data-i18n="fStart">开始时间（可选）</label><input type="time" id="inStart"></div>
           <div class="field"><label data-i18n="fEnd">结束时间（可选）</label><input type="time" id="inEnd"></div>
@@ -923,9 +956,14 @@ body{font-weight:600}
 <!-- 设置弹层 -->
 <div class="popover" id="settingsPop">
   <h3 data-i18n="settingsTitle">设置</h3>
-  <p class="sub" data-i18n="settingsSub">单价与汇率</p>
+  <p class="sub" data-i18n="settingsSub">币种、汇率、结算日、Google Drive 与数据管理</p>
   <div class="set-block">
-    <div class="set-row"><label data-i18n="usdLabel">汇率 · 1 USD = ? CNY</label><input type="number" id="setUsd" step="0.01" min="0"></div>
+    <div class="set-row"><label data-i18n="currencyLabel">显示币种</label><select id="setCurrency" class="set-select"></select></div>
+    <div class="set-row"><label data-i18n="fxRateLabel">实时汇率</label><span class="fx-rate" id="setFxRate">–</span><button type="button" class="icon-btn" id="btnFxRefresh" aria-label="刷新汇率"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button></div>
+    <div class="set-row"><label data-i18n="customCurLabel">添加币种</label><input type="text" id="setCustomCur" maxlength="3" placeholder="USD" autocomplete="off"><button type="button" class="btn btn-ghost" id="btnAddCur" data-i18n="addBtn">添加</button></div>
+    <div class="set-row"><label data-i18n="fxIdLabel">接口 ID</label><input type="text" id="setFxId" inputmode="numeric"></div>
+    <div class="set-row"><label data-i18n="fxKeyLabel">接口 Key</label><input type="text" id="setFxKey" inputmode="numeric"></div>
+    <div class="set-row" id="customCurList" hidden></div>
     <div class="set-row"><label data-i18n="settleDayLabel">每月结算日（1–28日）</label><input type="number" id="setSettleDay" min="1" max="28" step="1" inputmode="numeric"></div>
   </div>
   <div class="set-block">
@@ -1029,8 +1067,10 @@ const I18N = {
     toastCleared:"已清空全部数据", toastImported:"导入成功 · 共 {n} 条", toastExported:"已导出备份",
     importErr:"导入失败：文件格式不正确",
     undoRestored:"已恢复", confirmDel:"删除这条记录？",
-    settingsTitle:"设置", settingsSub:"汇率、结算日、Google Drive 与数据管理",
-    rateLabel:"每单收入（元）", usdLabel:"汇率 · 1 USD = ? CNY", settleDayLabel:"每月结算日（1–28日）",
+    settingsTitle:"设置", settingsSub:"币种、汇率、结算日、Google Drive 与数据管理",
+    currencyLabel:"显示币种", fxRateLabel:"实时汇率", fxBase:"基准币种", customCurLabel:"添加币种", addBtn:"添加",
+    fxIdLabel:"接口 ID", fxKeyLabel:"接口 Key", curAddErr:"输入 3 位币种代码", curExists:"该币种已存在", curBad:"该币种代码无效或接口不支持", curAdded:"已添加币种 {code}", curRemoved:"已移除 {code}", fxRefreshed:"汇率已更新",
+    rateLabel:"每单收入（元）", settleDayLabel:"每月结算日（1–28日）",
     driveConnect:"连接 Google Drive", driveSync:"同步到 Drive", driveRestore:"从 Drive 恢复", driveNeedClient:"Google Drive 尚未配置", driveReady:"点击连接 Google Drive", driveConnected:"Google Drive 已连接", driveSyncing:"正在同步…", driveUploaded:"已同步到 Google Drive", driveRestored:"已从 Google Drive 恢复", driveNoFile:"Drive 中还没有 WorkPoints 备份", driveError:"Google Drive 同步失败", driveLogout:"登出 Google Drive", driveLoggedOut:"已登出 Google Drive", driveNote:"使用内置 Google OAuth Client ID，数据保存在 Drive 私有应用空间",
     exportBtn:"导出数据", importBtn:"导入数据", clearBtn:"清空数据", setNote:"导入将替换当前记录 · 建议先导出备份",
     clearTitle:"清空全部数据？", clearMsg:"此操作不可恢复，确定要删除所有记录吗？建议先导出备份。",
@@ -1080,8 +1120,10 @@ const I18N = {
     toastCleared:"All data cleared", toastImported:"Imported · {n} entries", toastExported:"Backup exported",
     importErr:"Import failed: invalid file",
     undoRestored:"Restored", confirmDel:"Delete this entry?",
-    settingsTitle:"Settings", settingsSub:"Exchange · settlement day · Google Drive · data",
-    rateLabel:"Rate per order (CNY)", usdLabel:"Exchange · 1 USD = ? CNY", settleDayLabel:"Monthly settlement day (1–28)",
+    settingsTitle:"Settings", settingsSub:"Currency · exchange · settlement day · Google Drive · data",
+    currencyLabel:"Display currency", fxRateLabel:"Live rate", fxBase:"Base currency", customCurLabel:"Add currency", addBtn:"Add",
+    fxIdLabel:"API ID", fxKeyLabel:"API Key", curAddErr:"Enter a 3-letter currency code", curExists:"Currency already added", curBad:"Invalid code or API rejected it", curAdded:"Added {code}", curRemoved:"Removed {code}", fxRefreshed:"Rate updated",
+    rateLabel:"Rate per order (CNY)", settleDayLabel:"Monthly settlement day (1–28)",
     driveConnect:"Connect Google Drive", driveSync:"Sync to Drive", driveRestore:"Restore from Drive", driveNeedClient:"Google Drive is not configured", driveReady:"Connect Google Drive to begin", driveConnected:"Google Drive connected", driveSyncing:"Syncing…", driveUploaded:"Synced to Google Drive", driveRestored:"Restored from Google Drive", driveNoFile:"No WorkPoints backup found in Drive", driveError:"Google Drive sync failed", driveLogout:"Sign out of Google Drive", driveLoggedOut:"Signed out of Google Drive", driveNote:"Uses the built-in Google OAuth Client ID; data stays in Drive's private app space",
     exportBtn:"Export", importBtn:"Import", clearBtn:"Clear all", setNote:"Import replaces current records — export a backup first.",
     clearTitle:"Clear all data?", clearMsg:"This cannot be undone. Export a backup first.",
@@ -1110,12 +1152,36 @@ const I18N = {
 const LS_ENT = "wp.entries.v1", LS_LEDGERS = "wp.ledgers.v1", LS_VIEW = "wp.view.v1", LS_SET = "wp.settings.v1";
 const IS_DEMO_PAGE = /\/demo(?:\/index\.html)?\/?$/.test(location.pathname);
 const GOOGLE_CLIENT_ID = "79416566954-8fc53utshko2kfph51oh0fjrdu4hkk6t.apps.googleusercontent.com";
-const DEFAULTS = { lang:"zh", currency:"CNY", theme:"auto", rate:0.05, cnyPerUsd:6.75, settleDay:20, googleClientId:GOOGLE_CLIENT_ID, demo:false, range:30, customFrom:"", customTo:"" };
+/* 汇率接口（免费换算 API，id/key 可在设置里改） */
+const FX_API = "https://cn.apihz.cn/api/jinrong/huilv.php";
+const FX_TTL = 6 * 3600 * 1000; /* 汇率缓存 6 小时 */
+/* 常用币种：code / 符号 / 小数位 */
+const CURRENCIES = [
+  { code:"CNY", sym:"¥", dp:2, zh:"人民币", en:"CNY" },
+  { code:"USD", sym:"$", dp:2, zh:"美元", en:"USD" },
+  { code:"EUR", sym:"€", dp:2, zh:"欧元", en:"EUR" },
+  { code:"GBP", sym:"£", dp:2, zh:"英镑", en:"GBP" },
+  { code:"JPY", sym:"¥", dp:0, zh:"日元", en:"JPY" },
+  { code:"HKD", sym:"HK$", dp:2, zh:"港币", en:"HKD" },
+  { code:"KRW", sym:"₩", dp:0, zh:"韩元", en:"KRW" },
+  { code:"AUD", sym:"A$", dp:2, zh:"澳元", en:"AUD" },
+  { code:"CAD", sym:"C$", dp:2, zh:"加元", en:"CAD" },
+  { code:"SGD", sym:"S$", dp:2, zh:"新加坡元", en:"SGD" },
+  { code:"CHF", sym:"Fr", dp:2, zh:"瑞士法郎", en:"CHF" },
+  { code:"THB", sym:"฿", dp:2, zh:"泰铢", en:"THB" },
+  { code:"TWD", sym:"NT$", dp:2, zh:"新台币", en:"TWD" },
+  { code:"MYR", sym:"RM", dp:2, zh:"马来西亚林吉特", en:"MYR" },
+  { code:"RUB", sym:"₽", dp:2, zh:"俄罗斯卢布", en:"RUB" },
+  { code:"INR", sym:"₹", dp:2, zh:"印度卢比", en:"INR" }
+];
+const FALLBACK_RATES = { USD:6.75, EUR:7.8, GBP:9.1, JPY:0.0428, HKD:0.86, KRW:0.0048, AUD:4.4, CAD:4.9, SGD:5.0, CHF:7.6, THB:0.19, TWD:0.21, MYR:1.5, RUB:0.07, INR:0.08 };
+const DEFAULTS = { lang:"zh", currency:"CNY", theme:"auto", rate:0.05, cnyPerUsd:6.75, fx:null, fxAt:0, fxId:"88888888", fxKey:"88888888", customCurrencies:[], settleDay:20, googleClientId:GOOGLE_CLIENT_ID, demo:false, range:30, customFrom:"", customTo:"" };
 
 function loadSettings(){
   try{
     const s = JSON.parse(localStorage.getItem(LS_SET) || "{}");
     const merged = Object.assign({}, DEFAULTS, s);
+    if(!merged.fx || typeof merged.fx !== "object") merged.fx = { USD: Number(s.cnyPerUsd) || FALLBACK_RATES.USD };
     if(!String(merged.googleClientId || "").trim()) merged.googleClientId = DEFAULTS.googleClientId;
     return merged;
   }catch(e){ return Object.assign({}, DEFAULTS); }
@@ -1236,18 +1302,52 @@ function viewEntries(){
 }
 function ledgerById(id){ return state.ledgers.find(l => l.id === id); }
 function entryRate(e){ const r = e && e._rate; return Number.isFinite(Number(r)) && Number(r) >= 0 ? Number(r) : state.settings.rate; }
+function entryCurrency(e){ return (e && e.currency) || "CNY"; }
+/* 单条记录折合人民币金额：单数 × 单价（记入币种）× 该币种兑人民币汇率 */
+function entryCny(e){ return e.orders * entryRate(e) * fxRate(entryCurrency(e)); }
 
 /* ---------- 工具 ---------- */
 const DAY = 86400000;
 function startOfToday(){ const n=new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime(); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function numFmt(n, d=0){ return Number(n).toLocaleString(isZH()?"zh-CN":"en-US", {minimumFractionDigits:d, maximumFractionDigits:d}); }
+function allCurrencies(){
+  const custom = (state.settings.customCurrencies || []).map(c => ({ code:c, sym:c, dp:2, zh:c, en:c }));
+  return CURRENCIES.concat(custom);
+}
+function curInfo(code){ return allCurrencies().find(c => c.code === code) || CURRENCIES[0]; }
+function fxRate(code){
+  if(code === "CNY") return 1;
+  const r = Number(state.settings.fx && state.settings.fx[code]);
+  return Number.isFinite(r) && r > 0 ? r : (FALLBACK_RATES[code] || 1);
+}
+/* 拉取某币种兑人民币的实时汇率，结果缓存进 settings.fx（6 小时有效） */
+function fetchFxRate(code, force){
+  if(!code || code === "CNY") return Promise.resolve(1);
+  const cached = Number(state.settings.fx && state.settings.fx[code]);
+  const fresh = state.settings.fxAt && (Date.now() - state.settings.fxAt) < FX_TTL;
+  if(!force && Number.isFinite(cached) && cached > 0 && fresh) return Promise.resolve(cached);
+  const id = encodeURIComponent(state.settings.fxId || "88888888");
+  const key = encodeURIComponent(state.settings.fxKey || "88888888");
+  const url = FX_API + "?id=" + id + "&key=" + key + "&from=" + encodeURIComponent(code) + "&to=CNY&money=1";
+  return fetch(url)
+    .then(r => r.json())
+    .then(d => {
+      const rate = Number(d && d.rate);
+      if(!Number.isFinite(rate) || rate <= 0) throw new Error("bad rate");
+      state.settings.fx = Object.assign({}, state.settings.fx || {}, { [code]: rate });
+      state.settings.fxAt = Date.now();
+      saveSettings();
+      return rate;
+    })
+    .catch(() => { return Number.isFinite(cached) && cached > 0 ? cached : (FALLBACK_RATES[code] || 1); });
+}
 function fmtMoney(v){
-  if(state.settings.currency === "USD"){
-    const u = v / state.settings.cnyPerUsd;
-    return "$" + u.toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2});
-  }
-  return "¥" + Number(v).toLocaleString(isZH()?"zh-CN":"en-US", {minimumFractionDigits:2, maximumFractionDigits:2});
+  const code = state.settings.currency || "CNY";
+  const info = curInfo(code);
+  const u = Number(v) / fxRate(code);
+  const loc = code === "CNY" ? (isZH()?"zh-CN":"en-US") : "en-US";
+  return info.sym + u.toLocaleString(loc, {minimumFractionDigits:info.dp, maximumFractionDigits:info.dp});
 }
 function fmtDur(min){
   min = Math.max(0, Number(min)||0);
@@ -1373,7 +1473,7 @@ function aggInRange(from, to){
   const out = { earn:0, orders:0, minutes:0, n:0 };
   for(const e of viewEntries()){
     const ts = new Date(e.ts).getTime();
-    if(ts >= from && ts < to){ out.earn += e.orders * entryRate(e); out.orders += e.orders; out.minutes += entryMinutes(e); out.n++; }
+    if(ts >= from && ts < to){ out.earn += entryCny(e); out.orders += e.orders; out.minutes += entryMinutes(e); out.n++; }
   }
   out.earn = round2(out.earn);
   return out;
@@ -1385,7 +1485,7 @@ function dailySeries(from, to){
     if(ts < from || ts >= to) continue;
     const key = e.date || dateKey(ts);
     let s = map.get(key); if(!s){ s = {d:new Date(ts), earn:0, orders:0, min:0}; map.set(key, s); }
-    s.earn += e.orders * entryRate(e); s.orders += e.orders; s.min += entryMinutes(e);
+    s.earn += entryCny(e); s.orders += e.orders; s.min += entryMinutes(e);
   }
   const out = [];
   const n = Math.round((to-from)/DAY);
@@ -1404,7 +1504,7 @@ function hourlySeries(from, to){
     if(ts < from || ts >= to) continue;
     const index = Math.floor((ts - from) / HOUR);
     let s = map.get(index); if(!s){ s = {earn:0, orders:0, min:0}; map.set(index, s); }
-    s.earn += e.orders * entryRate(e); s.orders += e.orders; s.min += entryMinutes(e);
+    s.earn += entryCny(e); s.orders += e.orders; s.min += entryMinutes(e);
   }
   const out = [];
   const n = Math.ceil((to-from)/HOUR);
@@ -1432,7 +1532,7 @@ function sumByWeekday(from, to){
     if(ts < from || ts >= to) continue;
     const dow = new Date(ts).getDay(); // 0=Sun
     const idx = (dow + 6) % 7; // 0=Mon
-    w[idx] += e.orders * entryRate(e);
+    w[idx] += entryCny(e);
   }
   return w.map(round2);
 }
@@ -1843,7 +1943,7 @@ function applyLang(){
   document.querySelectorAll("[data-i18n]").forEach(n => { n.textContent = t(n.getAttribute("data-i18n")); });
   document.querySelectorAll("[data-i18n-aria]").forEach(n => { n.setAttribute("aria-label", t(n.getAttribute("data-i18n-aria"))); });
   document.getElementById("monthSub").textContent = tf("monthSub", {day:getSettleDay()});
-  document.getElementById("brandBadge").textContent = state.settings.currency === "USD" ? "$" : "¥";
+  document.getElementById("brandBadge").textContent = curInfo(state.settings.currency).sym;
   renderDriveControls();
 }
 
@@ -1865,7 +1965,6 @@ function makeSeg(containerId, options, getVal, onPick){
 function renderSegments(){
   const s = state.settings;
   makeSeg("langSeg", [{v:"zh", label:"中"},{v:"en", label:"EN"}], () => s.lang, v => { s.lang = v; saveSettings(); renderAll(); });
-  makeSeg("curSeg", [{v:"CNY", label:"¥"},{v:"USD", label:"$"}], () => s.currency, v => { s.currency = v; saveSettings(); applyLang(); renderAll(); });
   const rangeValues = [1,3,7,15,30,60,90,"all"];
   makeSeg("rangeSeg",
     [1,3,7,15,30,60,90].map(r => ({v:r, label: (isZH()? "近"+r+"日" : r+"D")})).concat([{v:"all", label:t("rangeTotal")}]),
@@ -1955,7 +2054,7 @@ function renderCharts(){
   for(const e of viewEntries()){
     const ts=new Date(e.ts).getTime(); if(ts<span.from||ts>=span.to) continue;
     const i = hIdx(e);
-    sess[i] += e.orders * entryRate(e);
+    sess[i] += entryCny(e);
     sessMin[i] += entryMinutes(e);
     sessOrd[i] += e.orders;
   }
@@ -2209,7 +2308,7 @@ function renderTable(){
     '</tr></thead><tbody>';
   const rows = list.map(e => {
     const ts = new Date(e.ts);
-    const earn = e.orders * entryRate(e);
+    const earn = entryCny(e);
     const ses = e.startHour != null || e.endHour != null ? t("segs")[hIdx(e)] : (zh ? "—" : "—");
     return '<tr>' +
       (merged ? '<td><span class="ledger-tag" title="'+esc(ledgerName(e._ledgerId))+'">'+esc(ledgerName(e._ledgerId))+'</span></td>' : "") +
@@ -2304,6 +2403,8 @@ function initForm(){
     renderFormLedger();
     renderLedgers();
   });
+  const curSel = document.getElementById("inCurrency");
+  if(curSel) curSel.addEventListener("change", () => updateFormPreview());
   document.getElementById("entryForm").addEventListener("submit", e => {
     e.preventDefault();
     const date = document.getElementById("inDate").value;
@@ -2328,6 +2429,7 @@ function initForm(){
       id: "e"+Date.now().toString(36)+Math.floor(Math.random()*1e4),
       ts: new Date(ts).toISOString(),
       date, startHour, endHour, hours, minutes, orders,
+      currency: formCurrency(),
       note: document.getElementById("inNote").value.trim()
     };
     led.entries.push(entry);
@@ -2349,9 +2451,14 @@ function activeLedgerRate(){
   const l = ledgerById(state.activeId);
   return l ? l.rate : state.settings.rate;
 }
+function formCurrency(){
+  const sel = document.getElementById("inCurrency");
+  return (sel && sel.value) || state.settings.currency || "CNY";
+}
 function updateFormPreview(){
   const o = +document.getElementById("inOrders").value || 0;
-  document.getElementById("formPreview").textContent = fmtMoney(o * activeLedgerRate());
+  const cur = formCurrency();
+  document.getElementById("formPreview").textContent = fmtMoney(o * activeLedgerRate() * fxRate(cur));
 }
 function renderFormLedger(){
   const sel = document.getElementById("inLedger");
@@ -2360,6 +2467,12 @@ function renderFormLedger(){
   if(!state.ledgers.some(l => l.id === state.activeId)) state.activeId = state.ledgers[0].id;
   sel.innerHTML = state.ledgers.map(l => '<option value="'+esc(l.id)+'">'+esc(l.name)+'</option>').join("");
   sel.value = state.activeId;
+  const curSel = document.getElementById("inCurrency");
+  if(curSel){
+    const def = state.settings.currency || "CNY";
+    curSel.innerHTML = allCurrencies().map(c => '<option value="'+esc(c.code)+'"'+(c.code===def?" selected":"")+'>'+esc(c.code)+'</option>').join("");
+    curSel.value = def;
+  }
   const sub = document.getElementById("addSub");
   if(sub){
     const l = ledgerById(state.activeId);
@@ -2599,14 +2712,45 @@ function autoSVG(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="current
 function initSettings(){
   const pop = document.getElementById("settingsPop");
   const btn = document.getElementById("settingsBtn");
-  const u = document.getElementById("setUsd"), sd = document.getElementById("setSettleDay");
-  u.value = state.settings.cnyPerUsd; sd.value = getSettleDay();
-  const open = () => { pop.classList.add("open"); };
+  const sd = document.getElementById("setSettleDay");
+  sd.value = getSettleDay();
+  const open = () => { pop.classList.add("open"); renderSettingsValues(); };
   const close = () => pop.classList.remove("open");
   btn.addEventListener("click", e => { e.stopPropagation(); pop.classList.contains("open") ? close() : open(); });
   document.addEventListener("pointerdown", e => { if(!pop.contains(e.target) && !btn.contains(e.target)) close(); });
   document.addEventListener("keydown", e => { if(e.key === "Escape") close(); });
-  u.addEventListener("change", () => { state.settings.cnyPerUsd = Math.max(0.01, parseFloat(u.value) || 0); saveSettings(); renderAll(); });
+  const curSel = document.getElementById("setCurrency");
+  curSel.addEventListener("change", () => {
+    const c = curSel.value; if(c && c !== state.settings.currency){
+      state.settings.currency = c; saveSettings(); applyLang(); renderAll(); renderSettingsValues();
+      fetchFxRate(c, true).then(() => { renderSettingsValues(); pulseFx(); renderAll(); });
+    }
+  });
+  document.getElementById("btnFxRefresh").addEventListener("click", () => {
+    fetchFxRate(state.settings.currency, true).then(() => { renderSettingsValues(); pulseFx(); renderAll(); toast(t("fxRefreshed")); });
+  });
+  const curInput = document.getElementById("setCustomCur");
+  const commitAddCur = () => {
+    const code = (curInput.value || "").trim().toUpperCase();
+    if(!/^[A-Z]{3}$/.test(code)){ toast(t("curAddErr")); return; }
+    if(allCurrencies().some(c => c.code === code)){ toast(t("curExists")); return; }
+    fetchFxRate(code, true).then(rate => {
+      if(!(Number.isFinite(rate) && rate > 0)){ toast(t("curBad")); return; }
+      state.settings.customCurrencies = (state.settings.customCurrencies || []).concat(code);
+      saveSettings(); curInput.value = ""; renderSettingsValues(); pulseFx(); renderFormLedger();
+      toast(tf("curAdded", {code}));
+    });
+  };
+  document.getElementById("btnAddCur").addEventListener("click", commitAddCur);
+  curInput.addEventListener("keydown", e => { if(e.key === "Enter") commitAddCur(); });
+  const fxId = document.getElementById("setFxId"), fxKey = document.getElementById("setFxKey");
+  const commitCreds = () => {
+    state.settings.fxId = fxId.value.trim() || "88888888";
+    state.settings.fxKey = fxKey.value.trim() || "88888888";
+    saveSettings();
+  };
+  fxId.addEventListener("change", commitCreds);
+  fxKey.addEventListener("change", commitCreds);
   const commitSettleDay = () => {
     state.settings.settleDay = Math.min(28, Math.max(1, Math.round(parseFloat(sd.value) || DEFAULTS.settleDay)));
     sd.value = getSettleDay(); saveSettings(); renderAll();
@@ -2636,6 +2780,54 @@ function initSettings(){
     saveSettings(); applyTheme(); applyLang();
   });
   renderDriveControls();
+}
+
+function pulseFx(){
+  const el = document.getElementById("setFxRate");
+  if(!el) return;
+  el.classList.remove("pulse"); void el.offsetWidth; /* 重新触发动画 */
+  el.classList.add("pulse");
+  setTimeout(() => el.classList.remove("pulse"), 650);
+}
+
+function renderSettingsValues(){
+  const curSel = document.getElementById("setCurrency");
+  if(curSel){
+    const cur = state.settings.currency;
+    curSel.innerHTML = allCurrencies().map(c => '<option value="'+esc(c.code)+'"'+(c.code===cur?" selected":"")+'>'+
+      (isZH() ? (c.zh === c.code ? c.code : c.zh+" ("+c.code+")") : (c.code+(c.en===c.code?"":" · "+c.en))) +
+      '</option>').join("");
+  }
+  const fxEl = document.getElementById("setFxRate");
+  if(fxEl){
+    const code = state.settings.currency;
+    if(code === "CNY"){
+      fxEl.textContent = t("fxBase");
+    }else{
+      const r = fxRate(code);
+      fxEl.textContent = "1 " + code + " ≈ ¥" + (Number.isFinite(r) ? r.toFixed(4) : "–");
+    }
+  }
+  const fid = document.getElementById("setFxId"), fk = document.getElementById("setFxKey");
+  if(fid && !fid.matches(":focus")) fid.value = state.settings.fxId || "88888888";
+  if(fk && !fk.matches(":focus")) fk.value = state.settings.fxKey || "88888888";
+  const list = document.getElementById("customCurList");
+  if(list){
+    const custom = state.settings.customCurrencies || [];
+    if(custom.length){
+      list.hidden = false;
+      list.innerHTML = '<label>'+esc(t("customCurLabel"))+'</label><span class="set-cur-list">' + custom.map(code =>
+        '<span class="set-cur-chip">'+esc(code)+'<button type="button" data-rm="'+esc(code)+'" aria-label="'+esc(t("clearBtn"))+'">✕</button></span>'
+      ).join("") + '</span>';
+      list.querySelectorAll("[data-rm]").forEach(b => b.addEventListener("click", () => {
+        state.settings.customCurrencies = (state.settings.customCurrencies || []).filter(x => x !== b.dataset.rm);
+        saveSettings(); renderSettingsValues(); renderFormLedger();
+        toast(tf("curRemoved", {code:b.dataset.rm}));
+      }));
+    }else{
+      list.hidden = true;
+    }
+  }
 }
 
 function initRangePicker(){
@@ -2929,6 +3121,9 @@ document.addEventListener("DOMContentLoaded", () => {
   applyTheme();
   restoreDriveSession();
   renderAll();
+  /* 拉取当前显示币种的实时汇率，让首屏数字尽量准确 */
+  const cur = state.settings.currency;
+  if(cur && cur !== "CNY") fetchFxRate(cur, false);
 });
 </script>
 </body>
